@@ -213,8 +213,6 @@ class AiAssistantController extends ChangeNotifier {
   /// The text content shown in the response popup.
   String? get responsePopupText => _responsePopupText;
 
-  /// The most recent agent-assisted action (successful handoff), if any.
-  ///
   // ---------------------------------------------------------------------------
   // Initialization
   // ---------------------------------------------------------------------------

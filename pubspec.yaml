@@ -1,9 +1,7 @@
 name: flutter_ai_assistant
-description: >
-  Drop-in AI assistant for Flutter apps. Reads UI via the Semantics tree,
-  executes multi-step tasks autonomously (tap, type, scroll, navigate),
-  and supports Gemini, Claude, and OpenAI. Voice input/output, custom tools,
-  and rich chat UI included.
+description: >-
+  Drop-in AI assistant for Flutter apps. Reads UI via Semantics tree, executes
+  multi-step tasks autonomously, and supports Gemini, Claude, and OpenAI.
 version: 0.1.0
 repository: https://github.com/myrickshaw/flutter_ai_assistant
 

@@ -191,7 +191,7 @@ Never throwForHttpStatus(int statusCode, String body, String providerName) {
       '$providerName: Conversation too long for model context window.',
     );
   }
-  if (statusCode == 529 || (statusCode == 529 && lowerBody.contains('overloaded'))) {
+  if (statusCode == 529) {
     throw RateLimitException(
       '$providerName: API overloaded (HTTP $statusCode). Retry shortly.',
     );

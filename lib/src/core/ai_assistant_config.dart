@@ -153,11 +153,11 @@ class AiAssistantConfig {
 
   /// Preferred speech recognition locales in priority order.
   ///
-  /// The first available locale on the device will be used. Hindi (`hi_IN`)
-  /// is listed first because Google's speech recognizer handles Hinglish
-  /// naturally in this locale.
+  /// The first available locale on the device will be used. Override this
+  /// to match your app's target audience (e.g., `['hi_IN', 'en_IN']` for
+  /// India, `['es_ES', 'en_US']` for Spanish-first).
   ///
-  /// Default: `['hi_IN', 'en_IN', 'en_US']`.
+  /// Default: `['en_US']`.
   final List<String> preferredLocales;
 
   /// Whether the agent speaks responses and progress aloud via TTS.
@@ -295,7 +295,7 @@ class AiAssistantConfig {
     this.appPurpose,
     this.fewShotExamples = const [],
     this.enableScreenshots = false,
-    this.preferredLocales = const ['hi_IN', 'en_IN', 'en_US'],
+    this.preferredLocales = const ['en_US'],
     this.enableTts = true,
     this.enableHaptics = true,
     this.fabBottomPadding = 72,

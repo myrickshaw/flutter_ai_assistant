@@ -114,7 +114,7 @@ The assistant doesn't use hardcoded screen coordinates or widget keys. It reads 
 
 ```yaml
 dependencies:
-  flutter_ai_assistant: ^1.0.0
+  flutter_ai_assistant: ^0.1.0
 ```
 
 ### 2. Wrap your app and wire the navigator observer
@@ -248,7 +248,7 @@ Every aspect of the assistant is configurable through `AiAssistantConfig`:
 |-----------|------|---------|-------------|
 | `voiceEnabled` | `bool` | `true` | Show mic button and enable voice input |
 | `enableTts` | `bool` | `true` | Speak responses aloud via TTS |
-| `preferredLocales` | `List<String>` | `['hi_IN', 'en_IN', 'en_US']` | Speech recognition locales in priority order |
+| `preferredLocales` | `List<String>` | `['en_US']` | Speech recognition locales in priority order |
 | `enableHaptics` | `bool` | `true` | Vibrate on mic activation, progress, and completion |
 
 ### UI
@@ -449,13 +449,12 @@ The assistant uses `speech_to_text` with intelligent locale resolution:
 ```dart
 AiAssistantConfig(
   voiceEnabled: true,
-  preferredLocales: ['hi_IN', 'en_IN', 'en_US'],
+  preferredLocales: ['en_US', 'hi_IN', 'es_ES'],  // your priority order
 )
 ```
 
 - On first listen, queries the device for available locales
 - Picks the best match from your preferred list (supports exact match, hyphen variants, and language prefix matching)
-- Hindi (`hi_IN`) is default-first because Google's speech recognizer handles Hinglish naturally in this locale
 - Partial transcription shown live as the user speaks
 - Low-confidence results are filtered before reaching the LLM
 
@@ -750,4 +749,4 @@ Voice features (speech-to-text, text-to-speech) depend on platform availability.
 
 ## License
 
-[Add your license here]
+MIT — see [LICENSE](LICENSE) for details.

@@ -1,4 +1,4 @@
-/// Example: Integrating flutter_ai_assistant into the Yatri app.
+/// Example: Integrating flutter_ai_assistant into a Flutter app.
 ///
 /// This shows the minimal setup required — zero annotations, zero boilerplate.
 /// Just wrap your app and provide an LLM API key.
@@ -53,8 +53,8 @@ class MinimalExampleApp extends StatelessWidget {
 
 /// Full integration with all optional features configured.
 ///
-/// This example shows what a Yatri-style app integration would look like
-/// with all the bells and whistles enabled.
+/// Full integration with all optional features configured, showing what a
+/// ride-hailing or delivery app integration would look like.
 void fullIntegration() {
   // 1. Choose your LLM provider (swap any time).
   final provider = GeminiProvider(
@@ -99,7 +99,7 @@ void fullIntegration() {
     AiAssistant(
       config: AiAssistantConfig(
         provider: provider,
-        assistantName: 'Yatri Assistant',
+        assistantName: 'My Assistant',
         voiceEnabled: true,
         showFloatingButton: true,
 
@@ -146,11 +146,11 @@ void fullIntegration() {
       child: Builder(builder: (context) {
         final controller = AiAssistant.read(context);
         return MaterialApp(
-          title: 'Yatri',
+          title: 'My App',
           // IMPORTANT: Wire the navigator observer for route tracking & navigation.
           navigatorObservers: [controller.navigatorObserver],
           home: Scaffold(
-            appBar: AppBar(title: const Text('Yatri')),
+            appBar: AppBar(title: const Text('My App')),
             body: const Center(child: Text('Your app content here')),
           ),
         );
