@@ -19,13 +19,16 @@ Your users can now say _"order 2 onions from the store"_ and the assistant will 
 
 ## Demo
 
-### Ordering from a Store
-
-![AI assistant ordering from a store](https://storage.googleapis.com/myrik-app-assets/rider/store_ai_assistant_edited.gif)
-
-### Booking a Ride
-
-![AI assistant booking a ride](https://storage.googleapis.com/myrik-app-assets/rider/ride_ai_assistant_edited.gif)
+<table>
+  <tr>
+    <td align="center"><strong>Ordering from a Store</strong></td>
+    <td align="center"><strong>Booking a Ride</strong></td>
+  </tr>
+  <tr>
+    <td><img src="https://storage.googleapis.com/myrik-app-assets/rider/store_ai_assistant_edited.gif" width="300" alt="AI assistant ordering from a store"></td>
+    <td><img src="https://storage.googleapis.com/myrik-app-assets/rider/ride_ai_assistant_edited.gif" width="300" alt="AI assistant booking a ride"></td>
+  </tr>
+</table>
 
 ---
 

@@ -1,3 +1,10 @@
+## 0.1.2
+
+### Fixed
+
+- Suppress deprecated `hasFlag`/`flags` warnings for newer Flutter SDK compatibility.
+- Resize demo GIFs in README to 300px side-by-side layout.
+
 ## 0.1.1
 
 ### Fixed

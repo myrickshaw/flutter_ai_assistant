@@ -97,6 +97,7 @@ class SemanticsWalker {
     final value = data.value;
     final hint = data.hint;
     final actions = data.actions;
+    // ignore: deprecated_member_use
     final flags = data.flags;
 
     // Determine the element type from flags.

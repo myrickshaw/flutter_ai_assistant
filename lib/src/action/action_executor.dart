@@ -883,6 +883,7 @@ class ActionExecutor {
       if (node == null) continue;
       final data = node.getSemanticsData();
       if (!data.actions.containsAction(SemanticsAction.setText)) continue;
+      // ignore: deprecated_member_use
       final isFocused = data.hasFlag(SemanticsFlag.isFocused);
       if (isFocused) {
         AiLogger.log(
