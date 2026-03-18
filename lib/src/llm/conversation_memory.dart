@@ -182,7 +182,9 @@ class ConversationMemory {
     switch (toolName) {
       case 'get_screen_content':
         // Extract just the route and a brief element summary.
-        final routeMatch = RegExp(r'CURRENT ROUTE:\s*(\S+)').firstMatch(content);
+        final routeMatch = RegExp(
+          r'CURRENT ROUTE:\s*(\S+)',
+        ).firstMatch(content);
         final route = routeMatch?.group(1) ?? '?';
         return '[Screen captured: $route — details compacted, call get_screen_content for fresh view]';
 
@@ -243,7 +245,8 @@ class ConversationMemory {
 
     // If the trim point would land between a tool call and its result,
     // move forward past the result.
-    while (trimTo < _messages.length && _messages[trimTo].role == LlmRole.tool) {
+    while (trimTo < _messages.length &&
+        _messages[trimTo].role == LlmRole.tool) {
       trimTo++;
     }
 
@@ -255,8 +258,8 @@ class ConversationMemory {
           prev.toolCalls != null &&
           prev.toolCalls!.isNotEmpty) {
         trimTo++;
-        while (
-            trimTo < _messages.length && _messages[trimTo].role == LlmRole.tool) {
+        while (trimTo < _messages.length &&
+            _messages[trimTo].role == LlmRole.tool) {
           trimTo++;
         }
       }

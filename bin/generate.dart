@@ -34,7 +34,10 @@ Future<void> main(List<String> args) async {
 
   // 1. Parse route constants.
   print('[1/6] Parsing route constants...');
-  final routeConstants = _parseRoutesFile(config.routesFile, config.routesClass);
+  final routeConstants = _parseRoutesFile(
+    config.routesFile,
+    config.routesClass,
+  );
   print('  Found ${routeConstants.length} route constants');
 
   // 2. Parse router to get route → view class mapping.
@@ -53,7 +56,9 @@ Future<void> main(List<String> args) async {
       viewSources[entry.key] = source;
     }
   }
-  print('  Found source for ${viewSources.length}/${routeToClass.length} view classes');
+  print(
+    '  Found source for ${viewSources.length}/${routeToClass.length} view classes',
+  );
 
   // 4. Send to Gemini for analysis.
   print('[4/6] Analyzing screens with Gemini...');
@@ -63,7 +68,9 @@ Future<void> main(List<String> args) async {
     final routeConstant = entry.key;
     final routeValue = routeConstants[routeConstant] ?? '/$routeConstant';
     processed++;
-    print('  [$processed/${viewSources.length}] Analyzing $routeConstant ($routeValue)...');
+    print(
+      '  [$processed/${viewSources.length}] Analyzing $routeConstant ($routeValue)...',
+    );
 
     try {
       final analysis = await _analyzeScreen(
@@ -203,7 +210,9 @@ _Config _parseArgs(List<String> args) {
     exit(1);
   }
   if (apiKey == null || apiKey.isEmpty) {
-    print('ERROR: Gemini API key required. Use --api-key= or --env=.env.staging');
+    print(
+      'ERROR: Gemini API key required. Use --api-key= or --env=.env.staging',
+    );
     exit(1);
   }
 
@@ -269,13 +278,9 @@ Options:
 /// Returns {constantName: routeValue} e.g., {"walletScreen": "/wallet"}
 Map<String, String> _parseRoutesFile(String path, String className) {
   final content = File(path).readAsStringSync();
-  final pattern = RegExp(
-    r'''static\s+const\s+(\w+)\s*=\s*['"]([^'"]+)['"]''',
-  );
+  final pattern = RegExp(r'''static\s+const\s+(\w+)\s*=\s*['"]([^'"]+)['"]''');
   final matches = pattern.allMatches(content);
-  return {
-    for (final m in matches) m.group(1)!: m.group(2)!,
-  };
+  return {for (final m in matches) m.group(1)!: m.group(2)!};
 }
 
 /// Parse the router file to map route constants to view class names.
@@ -287,9 +292,7 @@ Map<String, String> _parseRouterFile(String path, String routesClass) {
     'RouteDef\\s*\\(\\s*$routesClass\\.(\\w+)\\s*,\\s*page:\\s*(\\w+)',
   );
   final matches = pattern.allMatches(content);
-  return {
-    for (final m in matches) m.group(1)!: m.group(2)!,
-  };
+  return {for (final m in matches) m.group(1)!: m.group(2)!};
 }
 
 /// Find the lib/ directory from a file inside it.
@@ -318,7 +321,9 @@ String? _findClassSource(String libDir, String className) {
       final content = entity.readAsStringSync();
       if (RegExp('class\\s+$className\\s').hasMatch(content)) {
         // Normalize Windows line endings.
-        var normalized = content.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+        var normalized = content
+            .replaceAll('\r\n', '\n')
+            .replaceAll('\r', '\n');
         // Truncate very large files to stay within LLM token limits.
         if (normalized.length > 12000) {
           normalized = '${normalized.substring(0, 12000)}\n// ... (truncated)';
@@ -342,7 +347,8 @@ Future<Map<String, dynamic>?> _analyzeScreen(
   String sourceCode,
   String model,
 ) async {
-  final prompt = '''
+  final prompt =
+      '''
 Analyze this Flutter screen widget source code and return a JSON object describing the screen for an AI navigation agent.
 
 Route constant: $routeConstant
@@ -390,7 +396,9 @@ Rules:
     return jsonDecode(response) as Map<String, dynamic>;
   } catch (e) {
     // Try to extract JSON from markdown fencing.
-    final jsonMatch = RegExp(r'```(?:json)?\s*([\s\S]*?)\s*```').firstMatch(response);
+    final jsonMatch = RegExp(
+      r'```(?:json)?\s*([\s\S]*?)\s*```',
+    ).firstMatch(response);
     if (jsonMatch != null) {
       return jsonDecode(jsonMatch.group(1)!) as Map<String, dynamic>;
     }
@@ -410,7 +418,9 @@ Future<List<Map<String, dynamic>>> _generateFlows(
   for (final entry in screenAnalyses.entries) {
     final routeValue = routeConstants[entry.key] ?? '/${entry.key}';
     final analysis = entry.value;
-    screenSummaries.writeln('$routeValue (${entry.key}): ${analysis['title']} — ${analysis['description']}');
+    screenSummaries.writeln(
+      '$routeValue (${entry.key}): ${analysis['title']} — ${analysis['description']}',
+    );
     final navLinks = analysis['navigatesTo'] as List<dynamic>?;
     if (navLinks != null && navLinks.isNotEmpty) {
       for (final link in navLinks) {
@@ -419,7 +429,8 @@ Future<List<Map<String, dynamic>>> _generateFlows(
     }
   }
 
-  final prompt = '''
+  final prompt =
+      '''
 Given these app screens and their navigation links, identify the 3-5 most important multi-step user journeys (flows) that span multiple screens.
 
 SCREENS:
@@ -454,7 +465,9 @@ Rules:
     }
     return [];
   } catch (e) {
-    final jsonMatch = RegExp(r'```(?:json)?\s*([\s\S]*?)\s*```').firstMatch(response);
+    final jsonMatch = RegExp(
+      r'```(?:json)?\s*([\s\S]*?)\s*```',
+    ).firstMatch(response);
     if (jsonMatch != null) {
       final parsed = jsonDecode(jsonMatch.group(1)!);
       if (parsed is List) return parsed.cast<Map<String, dynamic>>();
@@ -473,19 +486,20 @@ Future<String?> _callGemini(String apiKey, String prompt, String model) async {
   try {
     final request = await client.postUrl(url);
     request.headers.set('Content-Type', 'application/json; charset=utf-8');
-    request.add(utf8.encode(jsonEncode({
-      'contents': [
-        {
-          'parts': [
-            {'text': prompt}
-          ]
-        }
-      ],
-      'generationConfig': {
-        'temperature': 0.1,
-        'maxOutputTokens': 4096,
-      },
-    })));
+    request.add(
+      utf8.encode(
+        jsonEncode({
+          'contents': [
+            {
+              'parts': [
+                {'text': prompt},
+              ],
+            },
+          ],
+          'generationConfig': {'temperature': 0.1, 'maxOutputTokens': 4096},
+        }),
+      ),
+    );
 
     final response = await request.close();
     final body = await response.transform(utf8.decoder).join();
@@ -531,10 +545,16 @@ String _generateDartFile({
   // Header.
   final timestamp = DateTime.now().toUtc().toIso8601String();
   buffer.writeln('// GENERATED by flutter_ai_assistant ($timestamp)');
-  buffer.writeln('// To regenerate: dart run flutter_ai_assistant:generate --env=.env.staging');
-  buffer.writeln('// Developer edits are welcome — re-generation only appends new routes.');
+  buffer.writeln(
+    '// To regenerate: dart run flutter_ai_assistant:generate --env=.env.staging',
+  );
+  buffer.writeln(
+    '// Developer edits are welcome — re-generation only appends new routes.',
+  );
   buffer.writeln('');
-  buffer.writeln("import 'package:flutter_ai_assistant/flutter_ai_assistant.dart';");
+  buffer.writeln(
+    "import 'package:flutter_ai_assistant/flutter_ai_assistant.dart';",
+  );
   buffer.writeln("import '$routesFileImport';");
   buffer.writeln('');
 
@@ -547,7 +567,9 @@ String _generateDartFile({
 
   buffer.writeln('const aiAppManifest = AiAppManifest(');
   buffer.writeln("  appName: ${_dartString(appName)},");
-  buffer.writeln("  appDescription: ${_dartString('$appName is a mobile app with screens including: $screenTitles.')},");
+  buffer.writeln(
+    "  appDescription: ${_dartString('$appName is a mobile app with screens including: $screenTitles.')},",
+  );
   buffer.writeln('  screens: {');
 
   // Generate screen entries.
@@ -660,7 +682,8 @@ void _writeScreenManifest(
       // Try to resolve route value to a Routes constant.
       final routeRef = _resolveRouteRef(route, routesClass);
       buffer.writeln(
-          '        AiNavigationLink(targetRoute: $routeRef, trigger: ${_dartString(trigger)}),');
+        '        AiNavigationLink(targetRoute: $routeRef, trigger: ${_dartString(trigger)}),',
+      );
     }
     buffer.writeln('      ],');
   }
@@ -696,7 +719,9 @@ void _writeFlowManifest(
     final instruction = step['instruction'] as String? ?? '';
     final expectedOutcome = step['expectedOutcome'] as String?;
     final routeRef = _resolveRouteRef(route, routesClass);
-    buffer.write('        AiFlowStep(route: $routeRef, instruction: ${_dartString(instruction)}');
+    buffer.write(
+      '        AiFlowStep(route: $routeRef, instruction: ${_dartString(instruction)}',
+    );
     if (expectedOutcome != null && expectedOutcome.isNotEmpty) {
       buffer.write(', expectedOutcome: ${_dartString(expectedOutcome)}');
     }

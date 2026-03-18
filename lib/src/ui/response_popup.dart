@@ -106,16 +106,15 @@ class _ResponsePopupState extends State<ResponsePopup>
     final maxLines = _isAction ? 2 : 4;
 
     // Combined animations: scale, fade, slide.
-    final scaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutBack),
-    );
-    final fadeAnim =
-        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut);
+    final scaleAnim = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutBack));
+    final fadeAnim = CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut);
     final slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic));
+    ).animate(CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic));
 
     return DefaultTextStyle(
       style: const TextStyle(decoration: TextDecoration.none),
@@ -134,12 +133,13 @@ class _ResponsePopupState extends State<ResponsePopup>
                   onTap: _expand,
                   onVerticalDragUpdate: (d) {
                     if (d.delta.dy > 0 || _dragY > 0) {
-                      setState(() => _dragY = (_dragY + d.delta.dy).clamp(0, 200));
+                      setState(
+                        () => _dragY = (_dragY + d.delta.dy).clamp(0, 200),
+                      );
                     }
                   },
                   onVerticalDragEnd: (d) {
-                    if (_dragY > 60 ||
-                        d.velocity.pixelsPerSecond.dy > 300) {
+                    if (_dragY > 60 || d.velocity.pixelsPerSecond.dy > 300) {
                       _dismiss();
                     } else {
                       setState(() => _dragY = 0);
@@ -330,13 +330,7 @@ class _CountdownRingPainter extends CustomPainter {
 
     // Progress arc (sweeps from top, clockwise).
     paint.color = color;
-    canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      2 * math.pi * progress,
-      false,
-      paint,
-    );
+    canvas.drawArc(rect, -math.pi / 2, 2 * math.pi * progress, false, paint);
   }
 
   @override

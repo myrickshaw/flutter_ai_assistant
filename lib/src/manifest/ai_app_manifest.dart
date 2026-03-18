@@ -52,17 +52,21 @@ class AiAppManifest {
     // Global navigation.
     if (globalNavigation.isNotEmpty) {
       buffer.writeln('GLOBAL NAVIGATION:');
-      final navItems =
-          globalNavigation.map((n) => '${n.label} (${n.route})').join(', ');
+      final navItems = globalNavigation
+          .map((n) => '${n.label} (${n.route})')
+          .join(', ');
       buffer.writeln('  $navItems');
       buffer.writeln();
     }
 
     // Screen map.
-    buffer.writeln('APP SCREENS (navigate with exact route name including "/"):');
+    buffer.writeln(
+      'APP SCREENS (navigate with exact route name including "/"):',
+    );
     for (final screen in screens.values) {
       buffer.writeln(
-          '  ${screen.route} — ${screen.title} — ${screen.description}');
+        '  ${screen.route} — ${screen.title} — ${screen.description}',
+      );
       if (screen.linksTo.isNotEmpty) {
         final links = screen.linksTo
             .map((l) => '${l.targetRoute} (${l.trigger})')

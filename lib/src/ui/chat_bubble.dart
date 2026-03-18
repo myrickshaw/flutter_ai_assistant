@@ -17,11 +17,8 @@ const _green = Color(0xFF5AE89E);
 const _red = Color(0xFFFF6B8A);
 
 /// Callback for when a chat button is tapped.
-typedef OnChatButtonTap = void Function(
-  AiChatMessage message,
-  ChatButton button,
-  int buttonIndex,
-);
+typedef OnChatButtonTap =
+    void Function(AiChatMessage message, ChatButton button, int buttonIndex);
 
 /// Single chat bubble styled for the JARVIS-themed AI overlay.
 ///
@@ -43,16 +40,18 @@ class ChatBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
-        mainAxisAlignment:
-            _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: _isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!_isUser) _aiAvatar(),
           if (!_isUser) const SizedBox(width: 8),
           Flexible(
             child: Column(
-              crossAxisAlignment:
-                  _isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: _isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 _bubble(),
                 // Buttons rendered OUTSIDE the bubble for better tap targets.
@@ -68,18 +67,17 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _aiAvatar() => Container(
-        width: 26,
-        height: 26,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(colors: [_accent, _glow]),
-          boxShadow: [
-            BoxShadow(
-                color: _accent.withValues(alpha: 0.25), blurRadius: 8),
-          ],
-        ),
-        child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
-      );
+    width: 26,
+    height: 26,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const LinearGradient(colors: [_accent, _glow]),
+      boxShadow: [
+        BoxShadow(color: _accent.withValues(alpha: 0.25), blurRadius: 8),
+      ],
+    ),
+    child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
+  );
 
   Widget _bubble() {
     return Container(
@@ -95,26 +93,26 @@ class ChatBubble extends StatelessWidget {
             : LinearGradient(
                 begin: Alignment.centerLeft,
                 end: const Alignment(0.5, 0),
-                colors: [
-                  _accent.withValues(alpha: 0.06),
-                  _bgMid,
-                ],
+                colors: [_accent.withValues(alpha: 0.06), _bgMid],
               ),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(18),
           topRight: const Radius.circular(18),
-          bottomLeft:
-              _isUser ? const Radius.circular(18) : const Radius.circular(4),
-          bottomRight:
-              _isUser ? const Radius.circular(4) : const Radius.circular(18),
+          bottomLeft: _isUser
+              ? const Radius.circular(18)
+              : const Radius.circular(4),
+          bottomRight: _isUser
+              ? const Radius.circular(4)
+              : const Radius.circular(18),
         ),
         border: _isUser ? null : Border.all(color: _glassBorder, width: 0.5),
         boxShadow: [
           if (_isUser)
             BoxShadow(
-                color: _accent.withValues(alpha: 0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 3)),
+              color: _accent.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
         ],
       ),
       child: Column(
@@ -123,11 +121,11 @@ class ChatBubble extends StatelessWidget {
           if (message.isVoice)
             Padding(
               padding: const EdgeInsets.only(bottom: 3),
-              child: Icon(Icons.mic,
-                  size: 11,
-                  color: _isUser
-                      ? Colors.white54
-                      : _textD.withValues(alpha: 0.5)),
+              child: Icon(
+                Icons.mic,
+                size: 11,
+                color: _isUser ? Colors.white54 : _textD.withValues(alpha: 0.5),
+              ),
             ),
           if (_hasRichContent)
             _richContentInBubble()
@@ -190,9 +188,7 @@ class ChatBubble extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final block in buttonBlocks) _renderButtons(block),
-        ],
+        children: [for (final block in buttonBlocks) _renderButtons(block)],
       ),
     );
   }
@@ -200,13 +196,13 @@ class ChatBubble extends StatelessWidget {
   Widget _renderBlock(ChatContent block) {
     return switch (block) {
       TextContent(:final text) => Text(
-          text,
-          style: TextStyle(
-            color: _isUser ? Colors.white : _textH,
-            fontSize: 13.5,
-            height: 1.45,
-          ),
+        text,
+        style: TextStyle(
+          color: _isUser ? Colors.white : _textH,
+          fontSize: 13.5,
+          height: 1.45,
         ),
+      ),
       ImageContent() => _renderImage(block),
       CardContent() => _renderCard(block),
       ButtonsContent() => _renderButtons(block),
@@ -239,7 +235,7 @@ class ChatBubble extends StatelessWidget {
                 color: _accent,
                 value: progress.expectedTotalBytes != null
                     ? progress.cumulativeBytesLoaded /
-                        progress.expectedTotalBytes!
+                          progress.expectedTotalBytes!
                     : null,
               ),
             ),
@@ -333,10 +329,16 @@ class ChatBubble extends StatelessWidget {
     required bool disabled,
     required bool isTapped,
   }) {
-    final colors = _buttonColors(button.style, disabled: disabled, isTapped: isTapped);
+    final colors = _buttonColors(
+      button.style,
+      disabled: disabled,
+      isTapped: isTapped,
+    );
 
     return GestureDetector(
-      onTap: disabled ? null : () => onButtonTap?.call(message, button, globalIndex),
+      onTap: disabled
+          ? null
+          : () => onButtonTap?.call(message, button, globalIndex),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(
@@ -348,7 +350,12 @@ class ChatBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: colors.border, width: isTapped ? 1.5 : 1),
           boxShadow: isTapped
-              ? [BoxShadow(color: colors.border.withValues(alpha: 0.3), blurRadius: 8)]
+              ? [
+                  BoxShadow(
+                    color: colors.border.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                  ),
+                ]
               : null,
         ),
         child: Row(
@@ -407,25 +414,35 @@ class ChatBubble extends StatelessWidget {
 
     return switch (style) {
       ChatButtonStyle.primary => _ButtonColors(
-          bg: isTapped ? _accent.withValues(alpha: 0.25) : _accent.withValues(alpha: 0.12),
-          border: _accent.withValues(alpha: isTapped ? 0.8 : 0.4),
-          text: isTapped ? _textH : _glow,
-        ),
+        bg: isTapped
+            ? _accent.withValues(alpha: 0.25)
+            : _accent.withValues(alpha: 0.12),
+        border: _accent.withValues(alpha: isTapped ? 0.8 : 0.4),
+        text: isTapped ? _textH : _glow,
+      ),
       ChatButtonStyle.outlined => _ButtonColors(
-          bg: isTapped ? _accent.withValues(alpha: 0.15) : _bgMid.withValues(alpha: 0.5),
-          border: isTapped ? _accent.withValues(alpha: 0.7) : _glassBorder.withValues(alpha: 0.4),
-          text: isTapped ? _textH : _textB,
-        ),
+        bg: isTapped
+            ? _accent.withValues(alpha: 0.15)
+            : _bgMid.withValues(alpha: 0.5),
+        border: isTapped
+            ? _accent.withValues(alpha: 0.7)
+            : _glassBorder.withValues(alpha: 0.4),
+        text: isTapped ? _textH : _textB,
+      ),
       ChatButtonStyle.success => _ButtonColors(
-          bg: isTapped ? _green.withValues(alpha: 0.2) : _green.withValues(alpha: 0.08),
-          border: _green.withValues(alpha: isTapped ? 0.7 : 0.3),
-          text: isTapped ? _textH : _green,
-        ),
+        bg: isTapped
+            ? _green.withValues(alpha: 0.2)
+            : _green.withValues(alpha: 0.08),
+        border: _green.withValues(alpha: isTapped ? 0.7 : 0.3),
+        text: isTapped ? _textH : _green,
+      ),
       ChatButtonStyle.destructive => _ButtonColors(
-          bg: isTapped ? _red.withValues(alpha: 0.2) : _red.withValues(alpha: 0.08),
-          border: _red.withValues(alpha: isTapped ? 0.7 : 0.3),
-          text: isTapped ? _textH : _red,
-        ),
+        bg: isTapped
+            ? _red.withValues(alpha: 0.2)
+            : _red.withValues(alpha: 0.08),
+        border: _red.withValues(alpha: isTapped ? 0.7 : 0.3),
+        text: isTapped ? _textH : _red,
+      ),
     };
   }
 
@@ -458,8 +475,11 @@ class ChatBubble extends StatelessWidget {
                       errorBuilder: (_, _, _) => Container(
                         color: _bgMid,
                         child: const Center(
-                          child: Icon(Icons.image_outlined,
-                              color: _textD, size: 32),
+                          child: Icon(
+                            Icons.image_outlined,
+                            color: _textD,
+                            size: 32,
+                          ),
                         ),
                       ),
                     ),
@@ -550,8 +570,9 @@ class ChatBubble extends StatelessWidget {
   // ── Action chips (tool execution history) ─────────────────────────────────
 
   Widget _actions() {
-    final visible =
-        message.actions!.where((a) => a.toolName != 'get_screen_content').toList();
+    final visible = message.actions!
+        .where((a) => a.toolName != 'get_screen_content')
+        .toList();
     if (visible.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 5),
@@ -576,13 +597,20 @@ class ChatBubble extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(ok ? Icons.check_circle_outline : Icons.error_outline,
-              size: 10, color: c.withValues(alpha: 0.8)),
+          Icon(
+            ok ? Icons.check_circle_outline : Icons.error_outline,
+            size: 10,
+            color: c.withValues(alpha: 0.8),
+          ),
           const SizedBox(width: 3),
           Flexible(
-            child: Text(a.toDisplayString(),
-                style: TextStyle(
-                    fontSize: 10, color: _textD.withValues(alpha: 0.7))),
+            child: Text(
+              a.toDisplayString(),
+              style: TextStyle(
+                fontSize: 10,
+                color: _textD.withValues(alpha: 0.7),
+              ),
+            ),
           ),
         ],
       ),
@@ -595,5 +623,9 @@ class _ButtonColors {
   final Color bg;
   final Color border;
   final Color text;
-  const _ButtonColors({required this.bg, required this.border, required this.text});
+  const _ButtonColors({
+    required this.bg,
+    required this.border,
+    required this.text,
+  });
 }

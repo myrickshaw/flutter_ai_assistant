@@ -112,5 +112,6 @@ class UiElement {
   }
 
   @override
-  String toString() => 'UiElement(nodeId: $nodeId, label: "$label", type: $type)';
+  String toString() =>
+      'UiElement(nodeId: $nodeId, label: "$label", type: $type)';
 }

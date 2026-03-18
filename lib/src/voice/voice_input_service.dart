@@ -42,7 +42,10 @@ class VoiceInputService {
         tag: 'VoiceIn',
       );
     }
-    AiLogger.log('Speech recognizer initialized: available=$_isInitialized', tag: 'VoiceIn');
+    AiLogger.log(
+      'Speech recognizer initialized: available=$_isInitialized',
+      tag: 'VoiceIn',
+    );
     return _isInitialized;
   }
 
@@ -57,7 +60,9 @@ class VoiceInputService {
       return preferred.first;
     }
 
-    final deviceIds = _deviceLocales!.map((l) => l.localeId.toLowerCase()).toSet();
+    final deviceIds = _deviceLocales!
+        .map((l) => l.localeId.toLowerCase())
+        .toSet();
 
     for (final pref in preferred) {
       final normalized = pref.toLowerCase().replaceAll('-', '_');
@@ -68,7 +73,9 @@ class VoiceInputService {
       if (deviceIds.contains(hyphen)) return pref;
       // Language-only prefix match (e.g. hi)
       final lang = normalized.split('_').first;
-      if (deviceIds.any((d) => d.split('_').first == lang || d.split('-').first == lang)) {
+      if (deviceIds.any(
+        (d) => d.split('_').first == lang || d.split('-').first == lang,
+      )) {
         return pref;
       }
     }
@@ -93,7 +100,10 @@ class VoiceInputService {
     }
 
     _resolvedLocaleId = _resolveBestLocale(preferredLocales);
-    AiLogger.log('Starting speech listening (locale=$_resolvedLocaleId)', tag: 'VoiceIn');
+    AiLogger.log(
+      'Starting speech listening (locale=$_resolvedLocaleId)',
+      tag: 'VoiceIn',
+    );
 
     await _speech.listen(
       onResult: (result) {

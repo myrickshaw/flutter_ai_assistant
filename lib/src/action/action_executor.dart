@@ -131,12 +131,18 @@ class ActionExecutor {
 
     // Extract transient feedback from both flash and settled snapshots.
     final transientFeedback = _extractTransientFeedback(
-      flashContext, beforeContext, afterContext,
+      flashContext,
+      beforeContext,
+      afterContext,
     );
 
-    final result = <String, dynamic>{'tapped': label, 'screenChanged': screenChanged};
+    final result = <String, dynamic>{
+      'tapped': label,
+      'screenChanged': screenChanged,
+    };
     if (!screenChanged) {
-      result['hint'] = 'Screen appears unchanged — element may be disabled or the action had no visible effect.';
+      result['hint'] =
+          'Screen appears unchanged — element may be disabled or the action had no visible effect.';
     }
     if (transientFeedback != null) {
       result['feedback'] = transientFeedback;
@@ -161,8 +167,17 @@ class ActionExecutor {
       }
 
       const transientKeywords = [
-        'added', 'removed', 'success', 'error', 'failed', 'deleted',
-        'updated', 'saved', 'confirmed', 'cancelled', 'cart',
+        'added',
+        'removed',
+        'success',
+        'error',
+        'failed',
+        'deleted',
+        'updated',
+        'saved',
+        'confirmed',
+        'cancelled',
+        'cart',
       ];
 
       // Check both the flash capture (immediate) and settled capture (delayed).
@@ -173,7 +188,10 @@ class ActionExecutor {
           final lower = label.toLowerCase();
           if (beforeLabels.contains(lower)) continue; // Not new.
           if (transientKeywords.any((k) => lower.contains(k))) {
-            AiLogger.log('Transient feedback captured: "$label"', tag: 'Action');
+            AiLogger.log(
+              'Transient feedback captured: "$label"',
+              tag: 'Action',
+            );
             return label;
           }
         }
@@ -630,7 +648,14 @@ class ActionExecutor {
 
     final patterns = isIncrease
         ? const ['increase quantity', 'increase', '+', 'plus', 'add']
-        : const ['decrease quantity', 'decrease', '-', 'minus', 'subtract', 'remove'];
+        : const [
+            'decrease quantity',
+            'decrease',
+            '-',
+            'minus',
+            'subtract',
+            'remove',
+          ];
 
     // Pass 1: Search by label patterns (including non-empty labels).
     for (final element in context.elements) {
@@ -813,9 +838,7 @@ class ActionExecutor {
 
       // Pass 1: exact match on a parent label.
       final exactMatch = matchList.where(
-        (e) => e.parentLabels.any(
-          (p) => p.toLowerCase() == normalizedParent,
-        ),
+        (e) => e.parentLabels.any((p) => p.toLowerCase() == normalizedParent),
       );
       if (exactMatch.isNotEmpty) {
         return _walker.findNodeById(exactMatch.first.nodeId);

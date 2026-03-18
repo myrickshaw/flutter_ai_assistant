@@ -9,10 +9,7 @@ class ScreenContext {
   /// When this snapshot was captured.
   final DateTime capturedAt;
 
-  const ScreenContext({
-    required this.elements,
-    required this.capturedAt,
-  });
+  const ScreenContext({required this.elements, required this.capturedAt});
 
   factory ScreenContext.empty() {
     return ScreenContext(elements: [], capturedAt: DateTime.now());
@@ -27,13 +24,17 @@ class ScreenContext {
 
   /// Whether there is more content below the current viewport.
   bool get canScrollDown => elements.any(
-      (e) => e.type == UiElementType.scrollable &&
-          e.availableActions.contains('scrollDown'));
+    (e) =>
+        e.type == UiElementType.scrollable &&
+        e.availableActions.contains('scrollDown'),
+  );
 
   /// Whether there is more content above the current viewport.
   bool get canScrollUp => elements.any(
-      (e) => e.type == UiElementType.scrollable &&
-          e.availableActions.contains('scrollUp'));
+    (e) =>
+        e.type == UiElementType.scrollable &&
+        e.availableActions.contains('scrollUp'),
+  );
 
   /// Format all elements as a human-readable prompt section for the LLM.
   ///
@@ -49,13 +50,16 @@ class ScreenContext {
     // Scroll awareness: tell the LLM there's more content.
     if (canScrollDown && canScrollUp) {
       buffer.writeln(
-          '** This screen has MORE CONTENT above AND below — scroll to see all content. **');
+        '** This screen has MORE CONTENT above AND below — scroll to see all content. **',
+      );
     } else if (canScrollDown) {
       buffer.writeln(
-          '** This screen has MORE CONTENT below — scroll down to see it. **');
+        '** This screen has MORE CONTENT below — scroll down to see it. **',
+      );
     } else if (canScrollUp) {
       buffer.writeln(
-          '** This screen has MORE CONTENT above — scroll up to see it. **');
+        '** This screen has MORE CONTENT above — scroll up to see it. **',
+      );
     }
 
     // Filter out noise:
@@ -98,7 +102,9 @@ class ScreenContext {
   /// Find elements by label (case-insensitive partial match).
   List<UiElement> findByLabel(String query) {
     final lower = query.toLowerCase();
-    return elements.where((e) => e.label.toLowerCase().contains(lower)).toList();
+    return elements
+        .where((e) => e.label.toLowerCase().contains(lower))
+        .toList();
   }
 
   /// Find the first scrollable element on screen, if any.

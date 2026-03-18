@@ -5,14 +5,26 @@ import 'tool_definition.dart';
 /// These are implemented by [ActionExecutor] and injected at startup,
 /// keeping the tool definitions decoupled from the action execution layer.
 class BuiltInToolHandlers {
-  final Future<Map<String, dynamic>> Function(String label, {String? parentContext}) onTap;
-  final Future<Map<String, dynamic>> Function(String label, String text, {String? parentContext})
-      onSetText;
+  final Future<Map<String, dynamic>> Function(
+    String label, {
+    String? parentContext,
+  })
+  onTap;
+  final Future<Map<String, dynamic>> Function(
+    String label,
+    String text, {
+    String? parentContext,
+  })
+  onSetText;
   final Future<Map<String, dynamic>> Function(String direction) onScroll;
   final Future<Map<String, dynamic>> Function(String routeName) onNavigate;
   final Future<Map<String, dynamic>> Function() onGoBack;
   final Future<Map<String, dynamic>> Function() onGetScreenContent;
-  final Future<Map<String, dynamic>> Function(String label, {String? parentContext}) onLongPress;
+  final Future<Map<String, dynamic>> Function(
+    String label, {
+    String? parentContext,
+  })
+  onLongPress;
   final Future<Map<String, dynamic>> Function(String label) onIncrease;
   final Future<Map<String, dynamic>> Function(String label) onDecrease;
   final Future<String> Function(String question) onAskUser;
@@ -83,7 +95,8 @@ List<AiTool> createBuiltInTools(BuiltInToolHandlers handlers) {
       parameters: {
         'label': const ToolParameter(
           type: 'string',
-          description: 'The label, hint, or placeholder text of the text field.',
+          description:
+              'The label, hint, or placeholder text of the text field.',
         ),
         'text': const ToolParameter(
           type: 'string',
@@ -252,7 +265,8 @@ List<AiTool> createBuiltInTools(BuiltInToolHandlers handlers) {
         return {
           'yourQuestion': question,
           'userResponse': response,
-          'instruction': 'The user responded to your question. '
+          'instruction':
+              'The user responded to your question. '
               'If their response ANSWERS your question → continue with the task. '
               'If their response is a COMPLETELY DIFFERENT REQUEST '
               '(unrelated to your question) → ABANDON your current task '
@@ -294,7 +308,8 @@ List<AiTool> createBuiltInTools(BuiltInToolHandlers handlers) {
           final result = await handlers.onHandoff!(buttonLabel, summary);
           return {
             'handoffResult': result,
-            'instruction': 'The user has acted. Call get_screen_content to see '
+            'instruction':
+                'The user has acted. Call get_screen_content to see '
                 'the current screen and report the outcome to the user.',
           };
         },

@@ -174,10 +174,7 @@ class _DraggableFabArea extends StatefulWidget {
   final AiAssistantController controller;
   final AiAssistantConfig config;
 
-  const _DraggableFabArea({
-    required this.controller,
-    required this.config,
-  });
+  const _DraggableFabArea({required this.controller, required this.config});
 
   @override
   State<_DraggableFabArea> createState() => _DraggableFabAreaState();
@@ -204,14 +201,15 @@ class _DraggableFabAreaState extends State<_DraggableFabArea>
   @override
   void initState() {
     super.initState();
-    _snapCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 350),
-    )..addListener(() {
-        if (_snapAnimation != null) {
-          setState(() => _position = _snapAnimation!.value);
-        }
-      });
+    _snapCtrl =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 350),
+        )..addListener(() {
+          if (_snapAnimation != null) {
+            setState(() => _position = _snapAnimation!.value);
+          }
+        });
   }
 
   @override
@@ -246,10 +244,14 @@ class _DraggableFabAreaState extends State<_DraggableFabArea>
 
     setState(() {
       _position = Offset(
-        (_position!.dx + details.delta.dx)
-            .clamp(half + _fabEdgeMargin, size.width - half - _fabEdgeMargin),
-        (_position!.dy + details.delta.dy)
-            .clamp(half + padding.top + 8, size.height - half - padding.bottom - 8),
+        (_position!.dx + details.delta.dx).clamp(
+          half + _fabEdgeMargin,
+          size.width - half - _fabEdgeMargin,
+        ),
+        (_position!.dy + details.delta.dy).clamp(
+          half + padding.top + 8,
+          size.height - half - padding.bottom - 8,
+        ),
       );
     });
   }
@@ -276,10 +278,7 @@ class _DraggableFabAreaState extends State<_DraggableFabArea>
     _snapAnimation = Tween<Offset>(
       begin: _position!,
       end: Offset(targetX, _position!.dy),
-    ).animate(CurvedAnimation(
-      parent: _snapCtrl,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _snapCtrl, curve: Curves.easeOutCubic));
 
     _snapCtrl.forward(from: 0);
     setState(() => _isDragging = false);
@@ -391,96 +390,96 @@ class _FloatingAssistantButtonState extends State<_FloatingAssistantButton>
         final hasUnread = ctrl.hasUnreadResponse;
 
         return AnimatedBuilder(
-            animation: Listenable.merge([_glowCtrl, _ringCtrl]),
-            builder: (_, _) {
-              final glowPhase = _glowCtrl.value * 2 * math.pi;
-              final glowAlpha = 0.25 + 0.15 * math.sin(glowPhase).abs();
+          animation: Listenable.merge([_glowCtrl, _ringCtrl]),
+          builder: (_, _) {
+            final glowPhase = _glowCtrl.value * 2 * math.pi;
+            final glowAlpha = 0.25 + 0.15 * math.sin(glowPhase).abs();
 
-              return SizedBox(
-                width: 58,
-                height: 58,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Outer glow shadow
-                    Container(
-                      width: 58,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: _fabAccent.withValues(alpha: glowAlpha),
-                            blurRadius: 18,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
+            return SizedBox(
+              width: 58,
+              height: 58,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Outer glow shadow
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: _fabAccent.withValues(alpha: glowAlpha),
+                          blurRadius: 18,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Rotating arc ring (processing indicator)
+                  if (isProcessing)
+                    CustomPaint(
+                      size: const Size(58, 58),
+                      painter: _FabRingPainter(t: _ringCtrl.value),
                     ),
 
-                    // Rotating arc ring (processing indicator)
-                    if (isProcessing)
-                      CustomPaint(
-                        size: const Size(58, 58),
-                        painter: _FabRingPainter(t: _ringCtrl.value),
+                  // Main button circle
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [_fabAccent, _fabGlow],
                       ),
-
-                    // Main button circle
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [_fabAccent, _fabGlow],
-                        ),
-                      ),
-                      child: Center(
-                        child: isProcessing
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.auto_awesome,
-                                size: 22,
+                    ),
+                    child: Center(
+                      child: isProcessing
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
                                 color: Colors.white,
                               ),
-                      ),
+                            )
+                          : const Icon(
+                              Icons.auto_awesome,
+                              size: 22,
+                              color: Colors.white,
+                            ),
                     ),
+                  ),
 
-                    // Unread badge (green dot)
-                    if (hasUnread)
-                      Positioned(
-                        right: 2,
-                        top: 2,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: _fabGreen,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _fabGreen.withValues(alpha: 0.4),
-                                blurRadius: 6,
-                              ),
-                            ],
-                          ),
+                  // Unread badge (green dot)
+                  if (hasUnread)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: _fabGreen,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _fabGreen.withValues(alpha: 0.4),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
-              );
-            },
-          );
+                    ),
+                ],
+              ),
+            );
+          },
+        );
       },
     );
   }

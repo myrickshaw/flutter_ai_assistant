@@ -2,11 +2,7 @@ import 'agent_action.dart';
 import 'chat_content.dart';
 
 /// Role of a message in the AI chat conversation.
-enum AiMessageRole {
-  user,
-  assistant,
-  system,
-}
+enum AiMessageRole { user, assistant, system }
 
 /// Classification of an AI response for post-task UI behavior.
 ///

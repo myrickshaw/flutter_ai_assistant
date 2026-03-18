@@ -1,3 +1,11 @@
+## 0.1.1
+
+### Fixed
+
+- Dart formatter compliance across all source files (50/50 static analysis).
+- Lint issues in `semantics_walker.dart` (`curly_braces_in_flow_control_structures`).
+- Unresolved dartdoc reference `[enableLogging]` in `AiLogger`.
+
 ## 0.1.0
 
 - Initial release.

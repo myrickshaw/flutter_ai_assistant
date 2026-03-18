@@ -166,7 +166,10 @@ class ReactAgent {
       if (i > 0 && i % 5 == 0 && executedActions.isNotEmpty) {
         final actionSummary = executedActions
             .where((a) => a.toolName != 'get_screen_content')
-            .map((a) => '${a.toolName}(${a.arguments.values.first}): ${a.result.success ? "OK" : "FAIL"}')
+            .map(
+              (a) =>
+                  '${a.toolName}(${a.arguments.values.first}): ${a.result.success ? "OK" : "FAIL"}',
+            )
             .take(8)
             .join(' → ');
         memory.addUserMessage(
@@ -175,7 +178,10 @@ class ReactAgent {
           'Actions so far: $actionSummary\n'
           'Continue toward the ORIGINAL goal. Do not stop at intermediate steps.',
         );
-        AiLogger.log('Orientation checkpoint at iteration ${i + 1}', tag: 'Agent');
+        AiLogger.log(
+          'Orientation checkpoint at iteration ${i + 1}',
+          tag: 'Agent',
+        );
         emit(AiEventType.agentOrientationCheckpoint, {
           'iteration': i + 1,
           'actionsSummary': actionSummary,
@@ -259,7 +265,8 @@ class ReactAgent {
           'errorType': 'authentication',
           'isRetryable': false,
         });
-        const text = 'API key is invalid or expired. Please check your configuration.';
+        const text =
+            'API key is invalid or expired. Please check your configuration.';
         memory.addAssistantMessage(text);
         return AgentResponse(text: text, actions: executedActions);
       } on ContextOverflowException catch (e) {
@@ -372,7 +379,8 @@ class ReactAgent {
       emit(AiEventType.llmResponseReceived, {
         'iteration': i + 1,
         'hasToolCalls': response.isToolCall,
-        'hasText': response.textContent != null &&
+        'hasText':
+            response.textContent != null &&
             response.textContent!.trim().isNotEmpty,
         'durationMs': llmStopwatch.elapsedMilliseconds,
       });
@@ -404,7 +412,8 @@ class ReactAgent {
         // complete before returning. Also catches questions returned as text.
         final looksLikeQuestion = _looksLikeQuestion(text);
 
-        if (executedActions.isNotEmpty && verificationAttempts < maxVerificationAttempts) {
+        if (executedActions.isNotEmpty &&
+            verificationAttempts < maxVerificationAttempts) {
           verificationAttempts++;
           AiLogger.log(
             'Post-completion verification ($verificationAttempts/$maxVerificationAttempts): '
@@ -644,14 +653,32 @@ class ReactAgent {
           // expected to not match the search query (e.g. tapping "ADD"
           // after searching "aaloo" is correct, not a mismatch).
           const actionLabels = {
-            'add', 'buy', 'remove', 'delete', 'select', 'view', 'open',
-            'confirm', 'submit', 'cancel', 'ok', 'yes', 'no', 'done',
-            'cart', 'view cart', 'checkout',
+            'add',
+            'buy',
+            'remove',
+            'delete',
+            'select',
+            'view',
+            'open',
+            'confirm',
+            'submit',
+            'cancel',
+            'ok',
+            'yes',
+            'no',
+            'done',
+            'cart',
+            'view cart',
+            'checkout',
           };
-          final isActionButton = actionLabels.contains(tapLabel.toLowerCase().trim());
+          final isActionButton = actionLabels.contains(
+            tapLabel.toLowerCase().trim(),
+          );
           final searchWords = _extractWords(lastSearchQuery);
           final tapWords = _extractWords(tapLabel);
-          if (!isActionButton && searchWords.isNotEmpty && tapWords.isNotEmpty) {
+          if (!isActionButton &&
+              searchWords.isNotEmpty &&
+              tapWords.isNotEmpty) {
             final overlap = searchWords.intersection(tapWords).length;
             final similarity = overlap / searchWords.length;
             if (similarity < 0.3) {
@@ -664,8 +691,8 @@ class ReactAgent {
               memory.addToolResult(
                 '${toolCall.id}_search_warning',
                 '[SYSTEM WARNING] You tapped "$tapLabel" but searched for '
-                '"$lastSearchQuery". These don\'t match. Verify this is the '
-                'correct item before proceeding.',
+                    '"$lastSearchQuery". These don\'t match. Verify this is the '
+                    'correct item before proceeding.',
               );
             }
           }
@@ -702,9 +729,9 @@ class ReactAgent {
           // instead of allowing another cycle of failing actions.
           final text = executedActions.isNotEmpty
               ? '${_summarizeActions(executedActions)} '
-                  'I ran into repeated issues and could not complete the task.'
+                    'I ran into repeated issues and could not complete the task.'
               : 'I ran into repeated issues and could not complete the request. '
-                  'Please try a different approach.';
+                    'Please try a different approach.';
           memory.addAssistantMessage(text);
           return AgentResponse(text: text, actions: executedActions);
         }
@@ -718,7 +745,8 @@ class ReactAgent {
           '3. If you have no useful information, say so honestly.\n'
           'Do NOT attempt any more tap_element or set_text calls.',
         );
-        consecutiveFailures = 0; // Reset so the breaker doesn't fire every iteration.
+        consecutiveFailures =
+            0; // Reset so the breaker doesn't fire every iteration.
       }
 
       emit(AiEventType.agentIterationCompleted, {
@@ -754,8 +782,15 @@ class ReactAgent {
   static bool _isDetailInfoQuery(String message) {
     final lower = message.toLowerCase();
     const detailIntents = [
-      'tell me about', 'details', 'detail', 'what did i', 'show me my',
-      'info about', 'information about', 'about my', 'describe',
+      'tell me about',
+      'details',
+      'detail',
+      'what did i',
+      'show me my',
+      'info about',
+      'information about',
+      'about my',
+      'describe',
     ];
     for (final intent in detailIntents) {
       if (lower.contains(intent)) return true;
@@ -830,8 +865,14 @@ class ReactAgent {
     final lowerQ = question.toLowerCase();
 
     // Question must be asking about quantity.
-    const quantityPatterns = ['how many', 'how much', 'quantity',
-      'kitna', 'kitne', 'kitni'];
+    const quantityPatterns = [
+      'how many',
+      'how much',
+      'quantity',
+      'kitna',
+      'kitne',
+      'kitni',
+    ];
     final isQuantityQuestion = quantityPatterns.any((p) => lowerQ.contains(p));
     if (!isQuantityQuestion) return false;
 
@@ -856,8 +897,11 @@ class ReactAgent {
       final idx = lowerU.indexOf(w);
       if (idx == -1) return false;
       final before = idx > 0 ? lowerU[idx - 1] : ' ';
-      final after = idx + w.length < lowerU.length ? lowerU[idx + w.length] : ' ';
-      return !RegExp(r'[a-z]').hasMatch(before) && !RegExp(r'[a-z]').hasMatch(after);
+      final after = idx + w.length < lowerU.length
+          ? lowerU[idx + w.length]
+          : ' ';
+      return !RegExp(r'[a-z]').hasMatch(before) &&
+          !RegExp(r'[a-z]').hasMatch(after);
     });
   }
 
@@ -925,19 +969,28 @@ class ReactAgent {
         .toSet();
   }
 
-
   /// Heuristic: does the user's message imply they need to search for something?
   /// Used to trigger a search-bar retry when the agent incorrectly claims
   /// it cannot find a search field.
   static bool _userNeedsSearch(String message) {
     final lower = message.toLowerCase();
     // Explicit search intent.
-    if (lower.contains('search') || lower.contains('find') || lower.contains('look for')) {
+    if (lower.contains('search') ||
+        lower.contains('find') ||
+        lower.contains('look for')) {
       return true;
     }
     // Imperative commands that typically require searching:
     // "order X", "buy X", "add X", "book X", "get X"
-    const actionVerbs = ['order', 'buy', 'add', 'book', 'get', 'manga', 'mangao'];
+    const actionVerbs = [
+      'order',
+      'buy',
+      'add',
+      'book',
+      'get',
+      'manga',
+      'mangao',
+    ];
     for (final verb in actionVerbs) {
       // verb followed by a space and something = likely needs search
       if (lower.contains('$verb ')) return true;
@@ -967,7 +1020,6 @@ class ReactAgent {
     ];
     return patterns.any((p) => lower.contains(p));
   }
-
 
   /// Polls [shouldCancel] every 500ms and returns null when cancelled.
   /// Used with [Future.any] to race against the LLM call so the stop

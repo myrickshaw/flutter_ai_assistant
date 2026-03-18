@@ -54,11 +54,10 @@ class OpenAiProvider implements LlmProvider {
     required List<LlmMessage> messages,
     required List<ToolDefinition> tools,
     String? systemPrompt,
-  }) =>
-      retryOnRateLimit(
-        () => _sendMessageInner(messages, tools, systemPrompt),
-        tag: 'OpenAI',
-      );
+  }) => retryOnRateLimit(
+    () => _sendMessageInner(messages, tools, systemPrompt),
+    tag: 'OpenAI',
+  );
 
   Future<LlmResponse> _sendMessageInner(
     List<LlmMessage> messages,

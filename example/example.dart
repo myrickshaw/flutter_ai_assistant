@@ -36,17 +36,19 @@ class MinimalExampleApp extends StatelessWidget {
         provider: GeminiProvider(apiKey: 'YOUR_GEMINI_API_KEY'),
       ),
       // Use Builder to access the controller for the navigatorObserver.
-      child: Builder(builder: (context) {
-        final controller = AiAssistant.read(context);
-        return MaterialApp(
-          title: 'My App',
-          // REQUIRED: Wire the observer so the AI can track navigation.
-          navigatorObservers: [controller.navigatorObserver],
-          home: const Scaffold(
-            body: Center(child: Text('Your app content here')),
-          ),
-        );
-      }),
+      child: Builder(
+        builder: (context) {
+          final controller = AiAssistant.read(context);
+          return MaterialApp(
+            title: 'My App',
+            // REQUIRED: Wire the observer so the AI can track navigation.
+            navigatorObservers: [controller.navigatorObserver],
+            home: const Scaffold(
+              body: Center(child: Text('Your app content here')),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -69,7 +71,8 @@ void fullIntegration() {
   // 2. Define custom tools for business logic the AI can't infer from UI.
   final bookRideTool = AiTool(
     name: 'book_ride',
-    description: 'Book a ride from pickup to destination. '
+    description:
+        'Book a ride from pickup to destination. '
         'Use this when the user asks to book a ride and all details are confirmed.',
     parameters: {
       'pickup': const ToolParameter(
@@ -143,18 +146,20 @@ void fullIntegration() {
         confirmDestructiveActions: true,
       ),
       // Use Builder to access the controller from within the AiAssistant scope.
-      child: Builder(builder: (context) {
-        final controller = AiAssistant.read(context);
-        return MaterialApp(
-          title: 'My App',
-          // IMPORTANT: Wire the navigator observer for route tracking & navigation.
-          navigatorObservers: [controller.navigatorObserver],
-          home: Scaffold(
-            appBar: AppBar(title: const Text('My App')),
-            body: const Center(child: Text('Your app content here')),
-          ),
-        );
-      }),
+      child: Builder(
+        builder: (context) {
+          final controller = AiAssistant.read(context);
+          return MaterialApp(
+            title: 'My App',
+            // IMPORTANT: Wire the navigator observer for route tracking & navigation.
+            navigatorObservers: [controller.navigatorObserver],
+            home: Scaffold(
+              appBar: AppBar(title: const Text('My App')),
+              body: const Center(child: Text('Your app content here')),
+            ),
+          );
+        },
+      ),
     ),
   );
 }

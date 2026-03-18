@@ -2,8 +2,9 @@ import 'dart:developer' as dev;
 
 /// Centralized logger for the AI Assistant package.
 ///
-/// Logging is disabled by default. Enable it by setting [enableLogging]
-/// to `true` in [AiAssistantConfig], or by calling [AiLogger.enable()]
+/// Logging is disabled by default. Enable it by setting
+/// [AiAssistantConfig.enableLogging] to `true`, or by calling
+/// [AiLogger.enable()]
 /// directly.
 ///
 /// All log output uses `dart:developer` [log], which appears in DevTools
@@ -37,7 +38,12 @@ class AiLogger {
   }
 
   /// Log an error with optional stack trace.
-  static void error(String message, {Object? error, StackTrace? stackTrace, String? tag}) {
+  static void error(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    String? tag,
+  }) {
     if (!_enabled) return;
     final prefix = tag != null ? '[$tag] ' : '';
     dev.log(

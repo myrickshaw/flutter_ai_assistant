@@ -4,13 +4,68 @@ import '../core/ai_logger.dart';
 
 /// Common Hindi/Hinglish particles used for language detection.
 const _hindiParticles = <String>{
-  'hai', 'ka', 'ke', 'ki', 'ko', 'mein', 'me', 'aapka', 'aapki', 'kiya',
-  'karo', 'krdo', 'krna', 'karna', 'bata', 'batao', 'dikhao', 'dikha',
-  'chahiye', 'wala', 'wali', 'wale', 'haan', 'nahi', 'nhi', 'aur', 'ya',
-  'se', 'par', 'pe', 'tak', 'bhi', 'toh', 'to', 'kya', 'kaise', 'kitna',
-  'kitne', 'kitni', 'kaun', 'kab', 'kaha', 'kahan', 'mera', 'meri', 'mere',
-  'tera', 'teri', 'tere', 'uska', 'uski', 'unka', 'unki', 'yeh', 'woh',
-  'abhi', 'pehle', 'baad', 'saath', 'liye', 'dedo', 'mangao',
+  'hai',
+  'ka',
+  'ke',
+  'ki',
+  'ko',
+  'mein',
+  'me',
+  'aapka',
+  'aapki',
+  'kiya',
+  'karo',
+  'krdo',
+  'krna',
+  'karna',
+  'bata',
+  'batao',
+  'dikhao',
+  'dikha',
+  'chahiye',
+  'wala',
+  'wali',
+  'wale',
+  'haan',
+  'nahi',
+  'nhi',
+  'aur',
+  'ya',
+  'se',
+  'par',
+  'pe',
+  'tak',
+  'bhi',
+  'toh',
+  'to',
+  'kya',
+  'kaise',
+  'kitna',
+  'kitne',
+  'kitni',
+  'kaun',
+  'kab',
+  'kaha',
+  'kahan',
+  'mera',
+  'meri',
+  'mere',
+  'tera',
+  'teri',
+  'tere',
+  'uska',
+  'uski',
+  'unka',
+  'unki',
+  'yeh',
+  'woh',
+  'abhi',
+  'pehle',
+  'baad',
+  'saath',
+  'liye',
+  'dedo',
+  'mangao',
 };
 
 /// Devanagari Unicode range for script detection.
@@ -31,13 +86,13 @@ class VoiceOutputService {
   bool get isSpeaking => _isSpeaking;
 
   /// Initialize the TTS engine with sensible defaults.
-  Future<void> initialize({
-    double speechRate = 0.5,
-    double pitch = 1.0,
-  }) async {
+  Future<void> initialize({double speechRate = 0.5, double pitch = 1.0}) async {
     if (_isInitialized) return;
 
-    AiLogger.log('Initializing TTS (rate=$speechRate, pitch=$pitch)', tag: 'VoiceOut');
+    AiLogger.log(
+      'Initializing TTS (rate=$speechRate, pitch=$pitch)',
+      tag: 'VoiceOut',
+    );
     await _tts.setSpeechRate(speechRate);
     await _tts.setPitch(pitch);
 
@@ -88,7 +143,10 @@ class VoiceOutputService {
   /// Set the TTS language, only calling the engine if it actually changed.
   Future<void> _ensureLanguage(String language) async {
     if (language == _currentLanguage) return;
-    AiLogger.log('TTS switching language: $_currentLanguage → $language', tag: 'VoiceOut');
+    AiLogger.log(
+      'TTS switching language: $_currentLanguage → $language',
+      tag: 'VoiceOut',
+    );
     await _tts.setLanguage(language);
     _currentLanguage = language;
   }
@@ -126,9 +184,14 @@ class VoiceOutputService {
     // Extract first sentence.
     final sentenceEnd = RegExp(r'[.!?\n]');
     final match = sentenceEnd.firstMatch(text);
-    final summary = match != null ? text.substring(0, match.end).trim() : text.substring(0, maxChars);
+    final summary = match != null
+        ? text.substring(0, match.end).trim()
+        : text.substring(0, maxChars);
 
-    AiLogger.log('TTS summary (${summary.length}/${text.length} chars)', tag: 'VoiceOut');
+    AiLogger.log(
+      'TTS summary (${summary.length}/${text.length} chars)',
+      tag: 'VoiceOut',
+    );
     return speak(summary);
   }
 

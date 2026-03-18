@@ -34,13 +34,19 @@ class SemanticsWalker {
   ScreenContext captureScreenContext() {
     final views = WidgetsBinding.instance.renderViews;
     if (views.isEmpty) {
-      AiLogger.warn('No render views available for screen capture', tag: 'Semantics');
+      AiLogger.warn(
+        'No render views available for screen capture',
+        tag: 'Semantics',
+      );
       return ScreenContext.empty();
     }
     final owner = views.first.owner?.semanticsOwner;
     final root = owner?.rootSemanticsNode;
     if (root == null) {
-      AiLogger.warn('No root semantics node — tree may not be ready', tag: 'Semantics');
+      AiLogger.warn(
+        'No root semantics node — tree may not be ready',
+        tag: 'Semantics',
+      );
       return ScreenContext.empty();
     }
 
@@ -105,7 +111,8 @@ class SemanticsWalker {
     final isInteractive = hasActions && type != UiElementType.unknown;
 
     if (hasContent || isInteractive) {
-      final isEnabled = !flags.containsFlag(SemanticsFlag.hasEnabledState) ||
+      final isEnabled =
+          !flags.containsFlag(SemanticsFlag.hasEnabledState) ||
           flags.containsFlag(SemanticsFlag.isEnabled);
       final isFocused = flags.containsFlag(SemanticsFlag.isFocused);
 
@@ -116,21 +123,23 @@ class SemanticsWalker {
         isChecked = flags.containsFlag(SemanticsFlag.isToggled);
       }
 
-      elements.add(UiElement(
-        nodeId: node.id,
-        label: label,
-        value: value.isNotEmpty ? value : null,
-        hint: hint.isNotEmpty ? hint : null,
-        type: type,
-        availableActions: availableActions,
-        parentLabels: parentLabels.length > 5
-            ? parentLabels.sublist(parentLabels.length - 5)
-            : parentLabels,
-        bounds: node.rect,
-        isEnabled: isEnabled,
-        isFocused: isFocused,
-        isChecked: isChecked,
-      ));
+      elements.add(
+        UiElement(
+          nodeId: node.id,
+          label: label,
+          value: value.isNotEmpty ? value : null,
+          hint: hint.isNotEmpty ? hint : null,
+          type: type,
+          availableActions: availableActions,
+          parentLabels: parentLabels.length > 5
+              ? parentLabels.sublist(parentLabels.length - 5)
+              : parentLabels,
+          bounds: node.rect,
+          isEnabled: isEnabled,
+          isFocused: isFocused,
+          isChecked: isChecked,
+        ),
+      );
     }
 
     // Build parent labels for children: include this node's label if present.
@@ -142,7 +151,10 @@ class SemanticsWalker {
     // Only collect when the parent has multiple children worth labeling.
     List<String>? siblingLabels;
     int childCount = 0;
-    node.visitChildren((_) { childCount++; return true; });
+    node.visitChildren((_) {
+      childCount++;
+      return true;
+    });
 
     if (childCount > 1) {
       siblingLabels = <String>[];
@@ -161,19 +173,16 @@ class SemanticsWalker {
         : childParentLabels;
 
     node.visitChildren((child) {
-      _walkNode(
-        child,
-        elements,
-        depth: depth + 1,
-        parentLabels: childContext,
-      );
+      _walkNode(child, elements, depth: depth + 1, parentLabels: childContext);
       return true;
     });
   }
 
   UiElementType _detectType(int flags, int actions) {
     if (flags.containsFlag(SemanticsFlag.isButton)) return UiElementType.button;
-    if (flags.containsFlag(SemanticsFlag.isTextField)) return UiElementType.textField;
+    if (flags.containsFlag(SemanticsFlag.isTextField)) {
+      return UiElementType.textField;
+    }
     if (flags.containsFlag(SemanticsFlag.isHeader)) return UiElementType.header;
     if (flags.containsFlag(SemanticsFlag.isSlider)) return UiElementType.slider;
     if (flags.containsFlag(SemanticsFlag.isLink)) return UiElementType.link;
@@ -203,14 +212,28 @@ class SemanticsWalker {
   List<String> _extractActions(int actions) {
     final result = <String>[];
     if (actions.containsAction(SemanticsAction.tap)) result.add('tap');
-    if (actions.containsAction(SemanticsAction.longPress)) result.add('longPress');
+    if (actions.containsAction(SemanticsAction.longPress)) {
+      result.add('longPress');
+    }
     if (actions.containsAction(SemanticsAction.setText)) result.add('setText');
-    if (actions.containsAction(SemanticsAction.scrollUp)) result.add('scrollUp');
-    if (actions.containsAction(SemanticsAction.scrollDown)) result.add('scrollDown');
-    if (actions.containsAction(SemanticsAction.scrollLeft)) result.add('scrollLeft');
-    if (actions.containsAction(SemanticsAction.scrollRight)) result.add('scrollRight');
-    if (actions.containsAction(SemanticsAction.increase)) result.add('increase');
-    if (actions.containsAction(SemanticsAction.decrease)) result.add('decrease');
+    if (actions.containsAction(SemanticsAction.scrollUp)) {
+      result.add('scrollUp');
+    }
+    if (actions.containsAction(SemanticsAction.scrollDown)) {
+      result.add('scrollDown');
+    }
+    if (actions.containsAction(SemanticsAction.scrollLeft)) {
+      result.add('scrollLeft');
+    }
+    if (actions.containsAction(SemanticsAction.scrollRight)) {
+      result.add('scrollRight');
+    }
+    if (actions.containsAction(SemanticsAction.increase)) {
+      result.add('increase');
+    }
+    if (actions.containsAction(SemanticsAction.decrease)) {
+      result.add('decrease');
+    }
     if (actions.containsAction(SemanticsAction.copy)) result.add('copy');
     if (actions.containsAction(SemanticsAction.cut)) result.add('cut');
     if (actions.containsAction(SemanticsAction.paste)) result.add('paste');

@@ -17,10 +17,7 @@ class ToolParameter {
 
   /// Convert to JSON Schema representation.
   Map<String, dynamic> toJsonSchema() {
-    final schema = <String, dynamic>{
-      'type': type,
-      'description': description,
-    };
+    final schema = <String, dynamic>{'type': type, 'description': description};
     if (enumValues != null) {
       schema['enum'] = enumValues;
     }
@@ -56,7 +53,9 @@ class ToolDefinition {
       'description': description,
       'parameters': {
         'type': 'object',
-        'properties': parameters.map((key, param) => MapEntry(key, param.toJsonSchema())),
+        'properties': parameters.map(
+          (key, param) => MapEntry(key, param.toJsonSchema()),
+        ),
         'required': required,
       },
     };
@@ -70,7 +69,8 @@ class AiTool {
   final String description;
   final Map<String, ToolParameter> parameters;
   final List<String> required;
-  final Future<Map<String, dynamic>> Function(Map<String, dynamic> args) handler;
+  final Future<Map<String, dynamic>> Function(Map<String, dynamic> args)
+  handler;
 
   const AiTool({
     required this.name,

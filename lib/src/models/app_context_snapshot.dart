@@ -15,11 +15,7 @@ class RouteInfo {
   /// (progressive learning).
   final ScreenContext? cachedContext;
 
-  const RouteInfo({
-    required this.name,
-    this.description,
-    this.cachedContext,
-  });
+  const RouteInfo({required this.name, this.description, this.cachedContext});
 }
 
 /// Complete snapshot of the app's state sent to the LLM for context.
@@ -97,7 +93,9 @@ class AppContextSnapshot {
               .map((e) => e.label)
               .where((l) => l.isNotEmpty)
               .join(', ');
-          buffer.writeln('- ${entry.key}: contains [$summary${elements.length > 5 ? ', ...' : ''}]');
+          buffer.writeln(
+            '- ${entry.key}: contains [$summary${elements.length > 5 ? ', ...' : ''}]',
+          );
         }
       }
       buffer.writeln();

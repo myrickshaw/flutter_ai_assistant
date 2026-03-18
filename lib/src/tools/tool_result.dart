@@ -9,11 +9,7 @@ class ToolResult {
   /// Error message if the tool failed.
   final String? error;
 
-  const ToolResult({
-    required this.success,
-    this.data = const {},
-    this.error,
-  });
+  const ToolResult({required this.success, this.data = const {}, this.error});
 
   factory ToolResult.ok([Map<String, dynamic> data = const {}]) {
     return ToolResult(success: true, data: data);
@@ -33,5 +29,6 @@ class ToolResult {
   }
 
   @override
-  String toString() => success ? 'ToolResult.ok($data)' : 'ToolResult.fail($error)';
+  String toString() =>
+      success ? 'ToolResult.ok($data)' : 'ToolResult.fail($error)';
 }

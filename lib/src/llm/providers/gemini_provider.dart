@@ -40,11 +40,10 @@ class GeminiProvider implements LlmProvider {
     required List<LlmMessage> messages,
     required List<ToolDefinition> tools,
     String? systemPrompt,
-  }) =>
-      retryOnRateLimit(
-        () => _sendMessageInner(messages, tools, systemPrompt),
-        tag: 'Gemini',
-      );
+  }) => retryOnRateLimit(
+    () => _sendMessageInner(messages, tools, systemPrompt),
+    tag: 'Gemini',
+  );
 
   Future<LlmResponse> _sendMessageInner(
     List<LlmMessage> messages,
@@ -216,10 +215,7 @@ class GeminiProvider implements LlmProvider {
       // Check prompt-level block reason (applies when ALL candidates are blocked).
       final blockReason = response.promptFeedback?.blockReason;
       if (blockReason != null) {
-        AiLogger.warn(
-          'Gemini blocked request: $blockReason',
-          tag: 'Gemini',
-        );
+        AiLogger.warn('Gemini blocked request: $blockReason', tag: 'Gemini');
         throw ContentFilteredException(
           'Gemini: Request blocked by safety filter ($blockReason).',
         );

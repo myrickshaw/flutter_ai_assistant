@@ -66,21 +66,16 @@ class ActionStep {
   }
 
   /// Generate a user-friendly present-tense description for a tool call.
-  static String descriptionForTool(
-    String toolName,
-    Map<String, dynamic> args,
-  ) {
+  static String descriptionForTool(String toolName, Map<String, dynamic> args) {
     return switch (toolName) {
       'tap_element' => 'Tapping "${args['label'] ?? 'element'}"',
       'set_text' =>
         'Entering "${args['text'] ?? '...'}" in "${args['label'] ?? 'field'}"',
       'scroll' => 'Scrolling ${args['direction'] ?? 'down'}',
-      'navigate_to_route' =>
-        'Navigating to ${args['routeName'] ?? 'screen'}',
+      'navigate_to_route' => 'Navigating to ${args['routeName'] ?? 'screen'}',
       'go_back' => 'Going back',
       'get_screen_content' => 'Reading screen content',
-      'long_press_element' =>
-        'Long pressing "${args['label'] ?? 'element'}"',
+      'long_press_element' => 'Long pressing "${args['label'] ?? 'element'}"',
       'increase_value' => 'Increasing "${args['label'] ?? 'value'}"',
       'decrease_value' => 'Decreasing "${args['label'] ?? 'value'}"',
       _ => 'Running $toolName',

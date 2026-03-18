@@ -30,8 +30,9 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
   void initState() {
     super.initState();
     _entryC = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 500))
-      ..forward();
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    )..forward();
   }
 
   @override
@@ -42,14 +43,14 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final curve =
-        CurvedAnimation(parent: _entryC, curve: Curves.easeOutCubic);
+    final curve = CurvedAnimation(parent: _entryC, curve: Curves.easeOutCubic);
     return FadeTransition(
       opacity: curve,
       child: SlideTransition(
         position: Tween<Offset>(
-                begin: const Offset(0, 0.1), end: Offset.zero)
-            .animate(curve),
+          begin: const Offset(0, 0.1),
+          end: Offset.zero,
+        ).animate(curve),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Row(
@@ -67,17 +68,17 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
   }
 
   Widget _avatar() => Container(
-        width: 28, height: 28,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(colors: [_accent, _glow]),
-          boxShadow: [
-            BoxShadow(
-                color: _accent.withValues(alpha: 0.25), blurRadius: 8),
-          ],
-        ),
-        child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
-      );
+    width: 28,
+    height: 28,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const LinearGradient(colors: [_accent, _glow]),
+      boxShadow: [
+        BoxShadow(color: _accent.withValues(alpha: 0.25), blurRadius: 8),
+      ],
+    ),
+    child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
+  );
 
   Widget _feedCard() {
     return ListenableBuilder(
@@ -86,8 +87,9 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
         final progressText = widget.controller.progressText;
         final finalText = widget.controller.finalResponseText;
         final steps = widget.controller.actionSteps;
-        final done =
-            steps.where((s) => s.status == ActionStepStatus.completed).length;
+        final done = steps
+            .where((s) => s.status == ActionStepStatus.completed)
+            .length;
         final total = steps.length;
         final waiting = widget.controller.isWaitingForUserResponse;
 
@@ -103,18 +105,14 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
             ),
             border: Border.all(color: _glassBorder, width: 0.5),
             boxShadow: [
-              BoxShadow(
-                  color: _accent.withValues(alpha: 0.06), blurRadius: 24),
+              BoxShadow(color: _accent.withValues(alpha: 0.06), blurRadius: 24),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (waiting)
-                _waitingForUser()
-              else
-                _status(progressText),
+              if (waiting) _waitingForUser() else _status(progressText),
               if (total > 0 && finalText == null && !waiting) ...[
                 const SizedBox(height: 10),
                 _progressDots(done, total),
@@ -163,8 +161,9 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
         opacity: anim,
         child: SlideTransition(
           position: Tween<Offset>(
-                  begin: const Offset(0, 0.15), end: Offset.zero)
-              .animate(anim),
+            begin: const Offset(0, 0.15),
+            end: Offset.zero,
+          ).animate(anim),
           child: child,
         ),
       ),
@@ -209,15 +208,16 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
               color: filled
                   ? _accent
                   : current
-                      ? _accent.withValues(alpha: 0.5)
-                      : _glassBorder,
+                  ? _accent.withValues(alpha: 0.5)
+                  : _glassBorder,
             ),
           );
         }),
         if (total > 8)
-          Text('+${total - 8}',
-              style: TextStyle(
-                  color: _textD.withValues(alpha: 0.5), fontSize: 9)),
+          Text(
+            '+${total - 8}',
+            style: TextStyle(color: _textD.withValues(alpha: 0.5), fontSize: 9),
+          ),
         const Spacer(),
       ],
     );
@@ -229,8 +229,9 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeOut,
       builder: (_, v, child) => Opacity(
-          opacity: v,
-          child: Transform.scale(scale: 0.95 + v * 0.05, child: child)),
+        opacity: v,
+        child: Transform.scale(scale: 0.95 + v * 0.05, child: child),
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
@@ -243,11 +244,16 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
             const Icon(Icons.check_circle, size: 14, color: _green),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(text,
-                  style: const TextStyle(
-                      color: _textH, fontSize: 12, fontWeight: FontWeight.w500),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis),
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: _textH,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -285,8 +291,9 @@ class _PulsingOrbState extends State<_PulsingOrb>
   void initState() {
     super.initState();
     _c = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1400))
-      ..repeat(reverse: true);
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -302,13 +309,16 @@ class _PulsingOrbState extends State<_PulsingOrb>
       builder: (_, _) {
         final v = _c.value;
         return Container(
-          width: 10, height: 10,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: RadialGradient(colors: [
-              _accent.withValues(alpha: 0.5 + v * 0.5),
-              _glow.withValues(alpha: 0.2 + v * 0.3),
-            ]),
+            gradient: RadialGradient(
+              colors: [
+                _accent.withValues(alpha: 0.5 + v * 0.5),
+                _glow.withValues(alpha: 0.2 + v * 0.3),
+              ],
+            ),
             boxShadow: [
               BoxShadow(
                 color: _accent.withValues(alpha: 0.15 + v * 0.3),
@@ -340,8 +350,9 @@ class _PulsingDotState extends State<_PulsingDot>
   void initState() {
     super.initState();
     _c = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000))
-      ..repeat(reverse: true);
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -357,7 +368,8 @@ class _PulsingDotState extends State<_PulsingDot>
       builder: (_, _) {
         final v = _c.value;
         return Container(
-          width: 10, height: 10,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: widget.color.withValues(alpha: 0.5 + v * 0.5),

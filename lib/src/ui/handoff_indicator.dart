@@ -44,16 +44,19 @@ class _HandoffIndicatorState extends State<HandoffIndicator>
     super.initState();
     // Slide down from top with spring-like overshoot.
     _slideCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 500))
-      ..forward();
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    )..forward();
     // Breathing green border glow.
     _glowCtrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 3))
-      ..repeat();
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
     // Cascading down-arrows that guide the eye toward the app.
     _arrowCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2000))
-      ..repeat();
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat();
   }
 
   @override
@@ -74,16 +77,15 @@ class _HandoffIndicatorState extends State<HandoffIndicator>
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
         child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, -1.5),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: _slideCtrl,
-            curve: Curves.easeOutBack,
-          )),
+          position:
+              Tween<Offset>(
+                begin: const Offset(0, -1.5),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutBack),
+              ),
           child: FadeTransition(
-            opacity:
-                CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut),
+            opacity: CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -111,7 +113,8 @@ class _HandoffIndicatorState extends State<HandoffIndicator>
             boxShadow: [
               BoxShadow(
                 color: _green.withValues(
-                    alpha: 0.10 + 0.08 * math.sin(phase).abs()),
+                  alpha: 0.10 + 0.08 * math.sin(phase).abs(),
+                ),
                 blurRadius: 20,
                 spreadRadius: 1,
               ),
@@ -126,10 +129,7 @@ class _HandoffIndicatorState extends State<HandoffIndicator>
           decoration: BoxDecoration(
             color: _bgDeep,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _green.withValues(alpha: 0.25),
-              width: 1,
-            ),
+            border: Border.all(color: _green.withValues(alpha: 0.25), width: 1),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           // DefaultTextStyle removes the yellow underline that appears when
@@ -141,78 +141,81 @@ class _HandoffIndicatorState extends State<HandoffIndicator>
               children: [
                 // Row 1: AI icon + CTA + Cancel/Done buttons
                 Row(
-                children: [
-                  // Gradient AI avatar
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(colors: [_accent, _glow]),
+                  children: [
+                    // Gradient AI avatar
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(colors: [_accent, _glow]),
+                      ),
+                      child: const Icon(
+                        Icons.auto_awesome,
+                        size: 14,
+                        color: Colors.white,
+                      ),
                     ),
-                    child: const Icon(Icons.auto_awesome,
-                        size: 14, color: Colors.white),
-                  ),
-                  const SizedBox(width: 10),
-                  // CTA: Tap "Book Ride" to confirm
-                  Expanded(
-                    child: RichText(
-                      text: TextSpan(
+                    const SizedBox(width: 10),
+                    // CTA: Tap "Book Ride" to confirm
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            color: _textB,
+                            fontSize: 14,
+                            height: 1.3,
+                          ),
+                          children: [
+                            const TextSpan(text: 'Tap '),
+                            TextSpan(
+                              text: '"$buttonLabel"',
+                              style: const TextStyle(
+                                color: _green,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const TextSpan(text: ' to confirm'),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Cancel (red circle) — stops agent and closes overlay.
+                    _CircleIconButton(
+                      icon: Icons.close_rounded,
+                      color: _red,
+                      onTap: widget.controller.requestStop,
+                    ),
+                    const SizedBox(width: 6),
+                    // Done (green circle, filled)
+                    _CircleIconButton(
+                      icon: Icons.check_rounded,
+                      color: _green,
+                      filled: true,
+                      onTap: widget.controller.resolveHandoff,
+                    ),
+                  ],
+                ),
+                // Row 2: Summary (indented to align with CTA text)
+                if (summary.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 40, top: 4),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        summary,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: _textB,
-                          fontSize: 14,
+                          color: _textD,
+                          fontSize: 12,
                           height: 1.3,
                         ),
-                        children: [
-                          const TextSpan(text: 'Tap '),
-                          TextSpan(
-                            text: '"$buttonLabel"',
-                            style: const TextStyle(
-                              color: _green,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const TextSpan(text: ' to confirm'),
-                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  // Cancel (red circle) — stops agent and closes overlay.
-                  _CircleIconButton(
-                    icon: Icons.close_rounded,
-                    color: _red,
-                    onTap: widget.controller.requestStop,
-                  ),
-                  const SizedBox(width: 6),
-                  // Done (green circle, filled)
-                  _CircleIconButton(
-                    icon: Icons.check_rounded,
-                    color: _green,
-                    filled: true,
-                    onTap: widget.controller.resolveHandoff,
-                  ),
-                ],
-              ),
-              // Row 2: Summary (indented to align with CTA text)
-              if (summary.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(left: 40, top: 4),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      summary,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: _textD,
-                        fontSize: 12,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -240,9 +243,8 @@ class _HandoffIndicatorState extends State<HandoffIndicator>
               final peakT = 0.15 + i * 0.2;
               final dist = ((_arrowCtrl.value - peakT) % 1.0);
               // Sine curve for smooth in-out, clamped to a narrow window.
-              final alpha =
-                  (math.sin(dist.clamp(0.0, 0.5) * math.pi) * 0.55)
-                      .clamp(0.05, 0.55);
+              final alpha = (math.sin(dist.clamp(0.0, 0.5) * math.pi) * 0.55)
+                  .clamp(0.05, 0.55);
               return Positioned(
                 top: i * 10.0,
                 child: Icon(

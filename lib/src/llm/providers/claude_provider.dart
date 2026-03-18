@@ -58,11 +58,10 @@ class ClaudeProvider implements LlmProvider {
     required List<LlmMessage> messages,
     required List<ToolDefinition> tools,
     String? systemPrompt,
-  }) =>
-      retryOnRateLimit(
-        () => _sendMessageInner(messages, tools, systemPrompt),
-        tag: 'Claude',
-      );
+  }) => retryOnRateLimit(
+    () => _sendMessageInner(messages, tools, systemPrompt),
+    tag: 'Claude',
+  );
 
   Future<LlmResponse> _sendMessageInner(
     List<LlmMessage> messages,

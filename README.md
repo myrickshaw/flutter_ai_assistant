@@ -17,6 +17,18 @@ Your users can now say _"order 2 onions from the store"_ and the assistant will 
 
 ---
 
+## Demo
+
+### Ordering from a Store
+
+![AI assistant ordering from a store](https://storage.googleapis.com/myrik-app-assets/rider/store_ai_assistant_edited.gif)
+
+### Booking a Ride
+
+![AI assistant booking a ride](https://storage.googleapis.com/myrik-app-assets/rider/ride_ai_assistant_edited.gif)
+
+---
+
 ## Table of Contents
 
 - [How It Works](#how-it-works)
@@ -341,6 +353,56 @@ abstract class LlmProvider {
 The package handles conversation format, tool schemas, and response parsing — your provider just needs to translate between `LlmMessage`/`LlmResponse` and your API's format.
 
 **Built-in error handling**: All HTTP providers share typed exceptions (`RateLimitException`, `ContextOverflowException`, `AuthenticationException`, `ContentFilteredException`) and automatic retry with exponential backoff on rate limits.
+
+---
+
+## Best Practices
+
+### Securing LLM API Keys
+
+**Never ship API keys in your app binary.** Hardcoded keys can be extracted from your APK/IPA in minutes. Instead, serve the key from your backend at runtime:
+
+```dart
+// DON'T do this — key is extractable from the binary
+GeminiProvider(apiKey: 'AIzaSy...')
+
+// DO this — fetch key from your authenticated backend
+final apiKey = await myBackend.getLlmApiKey(userToken: authToken);
+GeminiProvider(apiKey: apiKey)
+```
+
+**Recommended architecture:**
+1. User authenticates with your backend normally
+2. Your backend returns a short-lived LLM API key (or proxies LLM calls entirely)
+3. The app uses the key only in memory — never persisted to disk
+
+**Even better — proxy through your backend:**
+```dart
+// Your backend proxies calls to Gemini/Claude/OpenAI
+// This way the LLM key never leaves your server
+ClaudeProvider(
+  apiKey: userSessionToken,              // your own auth token
+  baseUrl: 'https://api.yourapp.com/ai', // your proxy endpoint
+)
+```
+
+This also lets you add rate limiting, cost tracking, content filtering, and audit logging server-side.
+
+### Handling Sensitive Screens
+
+If your app has screens with sensitive data (bank details, passwords) that the assistant shouldn't read or act on, you can exclude Semantics nodes using Flutter's built-in `ExcludeSemantics` widget:
+
+```dart
+ExcludeSemantics(
+  child: CreditCardForm(...),
+)
+```
+
+The assistant only sees what's in the Semantics tree — excluded subtrees are invisible to it.
+
+### Domain Instructions
+
+Invest time in `domainInstructions` and `fewShotExamples`. These are the highest-leverage configuration options — a few well-written examples dramatically improve the agent's accuracy and reduce unnecessary tool calls. Write them for your most common user flows first.
 
 ---
 

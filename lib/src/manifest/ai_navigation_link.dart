@@ -9,8 +9,5 @@ class AiNavigationLink {
   /// How to trigger this navigation (e.g., "Tap 'Buy Coins' button").
   final String trigger;
 
-  const AiNavigationLink({
-    required this.targetRoute,
-    required this.trigger,
-  });
+  const AiNavigationLink({required this.targetRoute, required this.trigger});
 }

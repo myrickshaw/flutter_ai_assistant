@@ -238,9 +238,7 @@ class AiAssistantController extends ChangeNotifier {
     navigatorObserver = AiNavigatorObserver(
       onRouteChanged: (route) {
         _contextCache.invalidateScreen();
-        _emit(AiEventType.routeChanged, {
-          'toRoute': route,
-        });
+        _emit(AiEventType.routeChanged, {'toRoute': route});
       },
     );
 
@@ -341,9 +339,7 @@ class AiAssistantController extends ChangeNotifier {
     _processingTimer = Timer(const Duration(minutes: 3), () {
       if (_isProcessing && !_isHandoffMode && !_waitingForUserResponse) {
         AiLogger.log('Processing timeout (3 min active)', tag: 'Controller');
-        _emit(AiEventType.agentTimeout, {
-          'actionCount': _actionSteps.length,
-        });
+        _emit(AiEventType.agentTimeout, {'actionCount': _actionSteps.length});
         _cancelRequested = true;
         _safeNotify();
       }
@@ -440,11 +436,11 @@ class AiAssistantController extends ChangeNotifier {
       final resolution = result.contains('cancelled')
           ? 'cancelled'
           : result.contains('timed out')
-              ? 'timeout'
-              : result.contains('route changed') ||
-                      result.contains('Screen changed')
-                  ? 'route_change'
-                  : 'manual';
+          ? 'timeout'
+          : result.contains('route changed') ||
+                result.contains('Screen changed')
+          ? 'route_change'
+          : 'manual';
       final routeAfter = AiNavigatorObserver.currentRoute;
 
       _emit(AiEventType.handoffCompleted, {
@@ -578,10 +574,16 @@ class AiAssistantController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   /// Pattern for numbered options: "1) Option text" or "1. Option text"
-  static final _numberedOptionPattern = RegExp(r'^\s*(\d+)[.)]\s+(.+)$', multiLine: true);
+  static final _numberedOptionPattern = RegExp(
+    r'^\s*(\d+)[.)]\s+(.+)$',
+    multiLine: true,
+  );
 
   /// Pattern for lettered options: "a) Option text" or "A. Option text"
-  static final _letteredOptionPattern = RegExp(r'^\s*([a-zA-Z])[.)]\s+(.+)$', multiLine: true);
+  static final _letteredOptionPattern = RegExp(
+    r'^\s*([a-zA-Z])[.)]\s+(.+)$',
+    multiLine: true,
+  );
 
   /// Words that suggest a yes/no or confirm/cancel question.
   static const _confirmPatterns = [
@@ -786,10 +788,7 @@ class AiAssistantController extends ChangeNotifier {
     }
 
     AiLogger.log('sendMessage: "$text" (voice=$isVoice)', tag: 'Controller');
-    _emit(AiEventType.messageSent, {
-      'message': text,
-      'isVoice': isVoice,
-    });
+    _emit(AiEventType.messageSent, {'message': text, 'isVoice': isVoice});
 
     // Track whether this task originated from voice for TTS/haptics.
     _currentTaskIsVoice = isVoice;
@@ -880,10 +879,7 @@ class AiAssistantController extends ChangeNotifier {
       if (responseType != AiResponseType.error) {
         final suggestions = _buildSuggestionChips(response);
         if (suggestions != null) {
-          responseRichContent = [
-            TextContent(response.text),
-            suggestions,
-          ];
+          responseRichContent = [TextContent(response.text), suggestions];
         } else {
           // If no suggestion chips and the response looks like a question
           // with embedded options, auto-generate interactive buttons.
@@ -1183,15 +1179,15 @@ class AiAssistantController extends ChangeNotifier {
 
     // Voice progress: speak sanitized thoughts aloud (throttled to max
     // once per 4 seconds) so the user hears what the agent is doing.
-    if (_currentTaskIsVoice && _voiceOutput != null && _config.enableTts && sanitized.length > 5) {
+    if (_currentTaskIsVoice &&
+        _voiceOutput != null &&
+        _config.enableTts &&
+        sanitized.length > 5) {
       final now = DateTime.now();
       if (_lastSpokenProgress == null ||
           now.difference(_lastSpokenProgress!) > const Duration(seconds: 4)) {
         _lastSpokenProgress = now;
-        _emit(AiEventType.ttsStarted, {
-          'text': sanitized,
-          'isProgress': true,
-        });
+        _emit(AiEventType.ttsStarted, {'text': sanitized, 'isProgress': true});
         _voiceOutput!.speak(sanitized);
       }
     }
@@ -1408,12 +1404,15 @@ class AiAssistantController extends ChangeNotifier {
     // Info-query pattern: agent navigated somewhere THEN read the screen to
     // extract data (e.g. "what's my balance?" → navigate → get_screen_content).
     // These should stay open even if the response is short.
-    final isInfoPattern = response.actions.isNotEmpty &&
+    final isInfoPattern =
+        response.actions.isNotEmpty &&
         response.actions.last.toolName == 'get_screen_content' &&
-        !response.actions.any((a) =>
-            a.toolName == 'tap_element' ||
-            a.toolName == 'set_text' ||
-            a.toolName == 'long_press_element');
+        !response.actions.any(
+          (a) =>
+              a.toolName == 'tap_element' ||
+              a.toolName == 'set_text' ||
+              a.toolName == 'long_press_element',
+        );
 
     // Short response + mutating tools = action confirmation ("Added to cart!")
     // Long response or no mutating tools = informational (needs reading time)
@@ -1507,9 +1506,7 @@ class AiAssistantController extends ChangeNotifier {
     // Allow voice input during ask_user but not during other processing.
     if (_isProcessing && !_waitingForUserResponse) return;
     AiLogger.log('Starting voice input', tag: 'Voice');
-    _emit(AiEventType.voiceInputStarted, {
-      'locales': _config.preferredLocales,
-    });
+    _emit(AiEventType.voiceInputStarted, {'locales': _config.preferredLocales});
 
     _isListening = true;
     _partialTranscription = null;
@@ -1539,7 +1536,8 @@ class AiAssistantController extends ChangeNotifier {
             _safeNotify();
             // Clear the "didn't catch" message after a moment.
             Future.delayed(const Duration(seconds: 2), () {
-              if (!_disposed && _partialTranscription == "Didn't catch that. Try again.") {
+              if (!_disposed &&
+                  _partialTranscription == "Didn't catch that. Try again.") {
                 _partialTranscription = null;
                 _safeNotify();
               }
@@ -1589,9 +1587,7 @@ class AiAssistantController extends ChangeNotifier {
 
   /// Clear the conversation and start fresh.
   void clearConversation() {
-    _emit(AiEventType.conversationCleared, {
-      'messageCount': _messages.length,
-    });
+    _emit(AiEventType.conversationCleared, {'messageCount': _messages.length});
     // If processing, stop first.
     if (_isProcessing) {
       _cancelRequested = true;

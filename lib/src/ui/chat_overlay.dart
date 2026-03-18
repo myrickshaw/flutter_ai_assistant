@@ -48,19 +48,25 @@ class _ChatOverlayState extends State<ChatOverlay>
   void initState() {
     super.initState();
     _fadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 400))
-      ..forward();
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    )..forward();
     _bgCtrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 20))
-      ..repeat();
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat();
     _ringCtrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 10))
-      ..repeat();
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
     _pulseCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2500))
-      ..repeat();
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat();
     _actionModeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 400));
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
     _ctrl.addListener(_onControllerChanged);
   }
 
@@ -135,7 +141,9 @@ class _ChatOverlayState extends State<ChatOverlay>
             child: AnimatedBuilder(
               animation: _actionModeCtrl,
               builder: (_, _) {
-                final actionT = Curves.easeInOut.transform(_actionModeCtrl.value);
+                final actionT = Curves.easeInOut.transform(
+                  _actionModeCtrl.value,
+                );
                 // In action mode, the background fades out to reveal the app.
                 final bgOpacity = 1.0 - actionT;
                 // Content slides to the bottom ~40% of the screen.
@@ -151,8 +159,10 @@ class _ChatOverlayState extends State<ChatOverlay>
                           child: AnimatedBuilder(
                             animation: _bgCtrl,
                             builder: (_, _) => CustomPaint(
-                              painter: _HoloPainter(_bgCtrl.value,
-                                  drawEffects: bgOpacity > 0.3),
+                              painter: _HoloPainter(
+                                _bgCtrl.value,
+                                drawEffects: bgOpacity > 0.3,
+                              ),
                               size: Size.infinite,
                             ),
                           ),
@@ -175,7 +185,9 @@ class _ChatOverlayState extends State<ChatOverlay>
                               decoration: BoxDecoration(
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _bgDeep.withValues(alpha: 0.7 * actionT),
+                                    color: _bgDeep.withValues(
+                                      alpha: 0.7 * actionT,
+                                    ),
                                     blurRadius: 20,
                                     spreadRadius: 10,
                                     offset: const Offset(0, -8),
@@ -190,7 +202,9 @@ class _ChatOverlayState extends State<ChatOverlay>
                               ),
                               child: Container(
                                 color: actionT > 0.01
-                                    ? _bgDeep.withValues(alpha: 0.88 + 0.12 * (1 - actionT))
+                                    ? _bgDeep.withValues(
+                                        alpha: 0.88 + 0.12 * (1 - actionT),
+                                      )
                                     : Colors.transparent,
                                 padding: EdgeInsets.only(
                                   top: actionT > 0.01 ? 0 : mq.padding.top,
@@ -262,8 +276,11 @@ class _ChatOverlayState extends State<ChatOverlay>
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.auto_awesome, size: 16,
-                        color: Colors.white),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      size: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -319,9 +336,14 @@ class _ChatOverlayState extends State<ChatOverlay>
       children: [
         _StatusDot(color: dotColor, animate: _ctrl.isProcessing),
         const SizedBox(width: 5),
-        Text(label,
-            style: TextStyle(color: dotColor, fontSize: 11,
-                fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: TextStyle(
+            color: dotColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
@@ -347,11 +369,11 @@ class _ChatOverlayState extends State<ChatOverlay>
   }
 
   Widget _hdrBtn(IconData ic, Color c, VoidCallback? onTap) => IconButton(
-        icon: Icon(ic, size: 22),
-        color: onTap == null ? _textD.withValues(alpha: 0.3) : c,
-        onPressed: onTap,
-        visualDensity: VisualDensity.compact,
-      );
+    icon: Icon(ic, size: 22),
+    color: onTap == null ? _textD.withValues(alpha: 0.3) : c,
+    onPressed: onTap,
+    visualDensity: VisualDensity.compact,
+  );
 
   // ── Messages ───────────────────────────────────────────────────────────────
 
@@ -424,16 +446,19 @@ class _ChatOverlayState extends State<ChatOverlay>
                 AnimatedBuilder(
                   animation: _pulseCtrl,
                   builder: (_, _) {
-                    final v = (math.sin(_pulseCtrl.value * math.pi * 2) + 1) / 2;
+                    final v =
+                        (math.sin(_pulseCtrl.value * math.pi * 2) + 1) / 2;
                     return Container(
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: RadialGradient(colors: [
-                          _accent.withValues(alpha: 0.25 + v * 0.1),
-                          _accent.withValues(alpha: 0.03),
-                        ]),
+                        gradient: RadialGradient(
+                          colors: [
+                            _accent.withValues(alpha: 0.25 + v * 0.1),
+                            _accent.withValues(alpha: 0.03),
+                          ],
+                        ),
                         border: Border.all(
                           color: _accent.withValues(alpha: 0.3 + v * 0.15),
                         ),
@@ -445,8 +470,11 @@ class _ChatOverlayState extends State<ChatOverlay>
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.auto_awesome, size: 30,
-                          color: _accentAlt),
+                      child: const Icon(
+                        Icons.auto_awesome,
+                        size: 30,
+                        color: _accentAlt,
+                      ),
                     );
                   },
                 ),
@@ -454,11 +482,15 @@ class _ChatOverlayState extends State<ChatOverlay>
             ),
           ),
           const SizedBox(height: 28),
-          const Text('How can I help?',
-              style: TextStyle(
-                color: _textH, fontSize: 22, fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              )),
+          const Text(
+            'How can I help?',
+            style: TextStyle(
+              color: _textH,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
           const SizedBox(height: 8),
           const Text(
             'I can navigate, tap, type, and\nperform actions for you.',
@@ -471,14 +503,18 @@ class _ChatOverlayState extends State<ChatOverlay>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Wrap(
-                spacing: 8, runSpacing: 8,
+                spacing: 8,
+                runSpacing: 8,
                 alignment: WrapAlignment.center,
                 children: _ctrl.config.initialSuggestions
-                    .map((chip) => _SuggestionChip(
-                          icon: chip.icon,
-                          label: chip.label,
-                          onTap: () => _ctrl.sendSuggestion(chip.label, chip.message),
-                        ))
+                    .map(
+                      (chip) => _SuggestionChip(
+                        icon: chip.icon,
+                        label: chip.label,
+                        onTap: () =>
+                            _ctrl.sendSuggestion(chip.label, chip.message),
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -499,16 +535,20 @@ class _ChatOverlayState extends State<ChatOverlay>
             decoration: BoxDecoration(
               color: _bgMid,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(18), topRight: Radius.circular(18),
-                bottomRight: Radius.circular(18), bottomLeft: Radius.circular(4),
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(18),
+                bottomRight: Radius.circular(18),
+                bottomLeft: Radius.circular(4),
               ),
               border: Border.all(color: _glassBorder, width: 0.5),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _TypingDot(delay: 0), SizedBox(width: 5),
-                _TypingDot(delay: 150), SizedBox(width: 5),
+                _TypingDot(delay: 0),
+                SizedBox(width: 5),
+                _TypingDot(delay: 150),
+                SizedBox(width: 5),
                 _TypingDot(delay: 300),
               ],
             ),
@@ -525,9 +565,7 @@ class _ChatOverlayState extends State<ChatOverlay>
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       decoration: BoxDecoration(
         color: _bgDeep.withValues(alpha: 0.92),
-        border: const Border(
-          top: BorderSide(color: _glassBorder, width: 0.5),
-        ),
+        border: const Border(top: BorderSide(color: _glassBorder, width: 0.5)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -544,8 +582,11 @@ class _ChatOverlayState extends State<ChatOverlay>
                 padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
                 child: Row(
                   children: [
-                    Icon(Icons.mic, size: 14,
-                        color: _red.withValues(alpha: 0.7)),
+                    Icon(
+                      Icons.mic,
+                      size: 14,
+                      color: _red.withValues(alpha: 0.7),
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -565,32 +606,32 @@ class _ChatOverlayState extends State<ChatOverlay>
             },
           ),
           Row(
-        children: [
-          if (_ctrl.config.voiceEnabled)
-            ListenableBuilder(
-              listenable: _ctrl,
-              builder: (_, _) => _circleBtn(
-                _ctrl.isListening ? Icons.mic : Icons.mic_none,
-                _ctrl.isListening ? _red : _textD,
-                (_ctrl.isProcessing && !_ctrl.isWaitingForUserResponse)
-                    ? null
-                    : _ctrl.toggleVoiceInput,
+            children: [
+              if (_ctrl.config.voiceEnabled)
+                ListenableBuilder(
+                  listenable: _ctrl,
+                  builder: (_, _) => _circleBtn(
+                    _ctrl.isListening ? Icons.mic : Icons.mic_none,
+                    _ctrl.isListening ? _red : _textD,
+                    (_ctrl.isProcessing && !_ctrl.isWaitingForUserResponse)
+                        ? null
+                        : _ctrl.toggleVoiceInput,
+                  ),
+                ),
+              const SizedBox(width: 6),
+              Expanded(child: _inputField()),
+              const SizedBox(width: 6),
+              ListenableBuilder(
+                listenable: _ctrl,
+                builder: (_, _) {
+                  if (_ctrl.isProcessing && !_ctrl.isWaitingForUserResponse) {
+                    return _stopButton();
+                  }
+                  return _sendButton();
+                },
               ),
-            ),
-          const SizedBox(width: 6),
-          Expanded(child: _inputField()),
-          const SizedBox(width: 6),
-          ListenableBuilder(
-            listenable: _ctrl,
-            builder: (_, _) {
-              if (_ctrl.isProcessing && !_ctrl.isWaitingForUserResponse) {
-                return _stopButton();
-              }
-              return _sendButton();
-            },
+            ],
           ),
-        ],
-      ),
         ],
       ),
     );
@@ -615,11 +656,10 @@ class _ChatOverlayState extends State<ChatOverlay>
               borderRadius: BorderRadius.circular(26),
               gradient: showGlow
                   ? SweepGradient(
-                      colors: const [
-                        _accent, _cyan, _accent, _cyan, _accent,
-                      ],
-                      transform:
-                          GradientRotation(_ringCtrl.value * 2 * math.pi),
+                      colors: const [_accent, _cyan, _accent, _cyan, _accent],
+                      transform: GradientRotation(
+                        _ringCtrl.value * 2 * math.pi,
+                      ),
                     )
                   : null,
               border: showGlow
@@ -655,8 +695,10 @@ class _ChatOverlayState extends State<ChatOverlay>
                 fontSize: 14,
               ),
               border: InputBorder.none,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 12,
+              ),
               isDense: true,
             ),
           ),
@@ -669,11 +711,13 @@ class _ChatOverlayState extends State<ChatOverlay>
     return GestureDetector(
       onTap: _send,
       child: Container(
-        width: 42, height: 42,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
-            begin: Alignment.topLeft, end: Alignment.bottomRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [_accent, _glow],
           ),
           boxShadow: [
@@ -684,8 +728,11 @@ class _ChatOverlayState extends State<ChatOverlay>
             ),
           ],
         ),
-        child: const Icon(Icons.arrow_upward_rounded, size: 20,
-            color: Colors.white),
+        child: const Icon(
+          Icons.arrow_upward_rounded,
+          size: 20,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -694,14 +741,18 @@ class _ChatOverlayState extends State<ChatOverlay>
     return GestureDetector(
       onTap: _ctrl.requestStop,
       child: Container(
-        width: 42, height: 42,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: _red.withValues(alpha: 0.15),
           border: Border.all(color: _red.withValues(alpha: 0.3)),
         ),
-        child: Icon(Icons.stop_rounded, size: 20,
-            color: _red.withValues(alpha: 0.8)),
+        child: Icon(
+          Icons.stop_rounded,
+          size: 20,
+          color: _red.withValues(alpha: 0.8),
+        ),
       ),
     );
   }
@@ -710,25 +761,30 @@ class _ChatOverlayState extends State<ChatOverlay>
       GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 38, height: 38,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: _bgMid,
             border: Border.all(color: _glassBorder, width: 0.5),
           ),
-          child: Icon(ic, size: 20,
-              color: onTap == null ? c.withValues(alpha: 0.3) : c),
+          child: Icon(
+            ic,
+            size: 20,
+            color: onTap == null ? c.withValues(alpha: 0.3) : c,
+          ),
         ),
       );
 
   static Widget _miniAvatar() => Container(
-        width: 28, height: 28,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(colors: [_accent, _glow]),
-        ),
-        child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
-      );
+    width: 28,
+    height: 28,
+    decoration: const BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: LinearGradient(colors: [_accent, _glow]),
+    ),
+    child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -752,7 +808,9 @@ class _StatusDotState extends State<_StatusDot>
   void initState() {
     super.initState();
     _c = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1200));
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
     if (widget.animate) _c.repeat(reverse: true);
   }
 
@@ -780,16 +838,19 @@ class _StatusDotState extends State<_StatusDot>
       builder: (_, _) {
         final v = _c.value;
         return Container(
-          width: 6, height: 6,
+          width: 6,
+          height: 6,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: widget.color,
             boxShadow: widget.animate
-                ? [BoxShadow(
-                    color: widget.color.withValues(alpha: 0.3 + v * 0.4),
-                    blurRadius: 4 + v * 4,
-                    spreadRadius: v * 2,
-                  )]
+                ? [
+                    BoxShadow(
+                      color: widget.color.withValues(alpha: 0.3 + v * 0.4),
+                      blurRadius: 4 + v * 4,
+                      spreadRadius: v * 2,
+                    ),
+                  ]
                 : null,
           ),
         );
@@ -804,16 +865,17 @@ class _StatusDotState extends State<_StatusDot>
 
 class _HoloPainter extends CustomPainter {
   final double t;
+
   /// When false, skip grid/particles/scanline for performance (used when
   /// the background is mostly transparent during action mode).
   final bool drawEffects;
   _HoloPainter(this.t, {this.drawEffects = true});
 
   static final _rngGrid = math.Random(7);
-  static final _gridGlowPoints = List.generate(15, (_) => [
-    _rngGrid.nextDouble(),
-    _rngGrid.nextDouble(),
-  ]);
+  static final _gridGlowPoints = List.generate(
+    15,
+    (_) => [_rngGrid.nextDouble(), _rngGrid.nextDouble()],
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -879,12 +941,19 @@ class _HoloPainter extends CustomPainter {
       final color = i % 3 == 0 ? _cyan : _accent;
 
       final pos = Offset(x % size.width, y % size.height);
-      canvas.drawCircle(pos, radius, Paint()..color = color.withValues(alpha: opacity));
+      canvas.drawCircle(
+        pos,
+        radius,
+        Paint()..color = color.withValues(alpha: opacity),
+      );
 
       // Glow halo for larger particles.
       if (radius > 1.8) {
         canvas.drawCircle(
-            pos, radius * 3.5, Paint()..color = color.withValues(alpha: opacity * 0.12));
+          pos,
+          radius * 3.5,
+          Paint()..color = color.withValues(alpha: opacity * 0.12),
+        );
       }
     }
   }
@@ -1031,8 +1100,9 @@ class _MessageEntranceState extends State<_MessageEntrance>
   void initState() {
     super.initState();
     _c = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 350))
-      ..forward();
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    )..forward();
   }
 
   @override
@@ -1075,7 +1145,9 @@ class _TypingDotState extends State<_TypingDot>
   void initState() {
     super.initState();
     _c = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     Future.delayed(Duration(milliseconds: widget.delay), () {
       if (mounted) _c.repeat(reverse: true);
     });
@@ -1096,13 +1168,13 @@ class _TypingDotState extends State<_TypingDot>
         child: Opacity(
           opacity: 0.3 + _c.value * 0.7,
           child: Container(
-            width: 7, height: 7,
+            width: 7,
+            height: 7,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(colors: [_accent, _glow]),
               boxShadow: [
-                BoxShadow(
-                    color: _accent.withValues(alpha: 0.3), blurRadius: 4),
+                BoxShadow(color: _accent.withValues(alpha: 0.3), blurRadius: 4),
               ],
             ),
           ),
@@ -1143,9 +1215,14 @@ class _SuggestionChip extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: _accentAlt),
             const SizedBox(width: 6),
-            Text(label,
-                style: const TextStyle(
-                    color: _textB, fontSize: 12, fontWeight: FontWeight.w500)),
+            Text(
+              label,
+              style: const TextStyle(
+                color: _textB,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),

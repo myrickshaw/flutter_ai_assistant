@@ -67,7 +67,10 @@ class ContextCache {
         // Move to end (most recently used).
         _screenCache.remove(currentRoute);
         _screenCache[currentRoute] = entry;
-        AiLogger.log('Screen cache HIT for route "$currentRoute"', tag: 'Cache');
+        AiLogger.log(
+          'Screen cache HIT for route "$currentRoute"',
+          tag: 'Cache',
+        );
         _wasDirty = false;
         return entry.value;
       }
@@ -75,7 +78,10 @@ class ContextCache {
 
     // Rebuild.
     _wasDirty = true;
-    AiLogger.log('Screen cache MISS for route "$currentRoute" — rebuilding', tag: 'Cache');
+    AiLogger.log(
+      'Screen cache MISS for route "$currentRoute" — rebuilding',
+      tag: 'Cache',
+    );
     final context = onCaptureScreen?.call() ?? ScreenContext.empty();
     if (currentRoute != null) {
       _screenCache[currentRoute] = _CacheEntry(context);
@@ -94,8 +100,13 @@ class ContextCache {
 
   /// Get or rebuild the global context.
   Future<Map<String, dynamic>> getGlobalContext() async {
-    if (!_globalDirty && _globalCache != null && !_globalCache!.isExpired(_globalTtl)) {
-      AiLogger.log('Global cache HIT (${_globalCache!.value.length} keys)', tag: 'Cache');
+    if (!_globalDirty &&
+        _globalCache != null &&
+        !_globalCache!.isExpired(_globalTtl)) {
+      AiLogger.log(
+        'Global cache HIT (${_globalCache!.value.length} keys)',
+        tag: 'Cache',
+      );
       return _globalCache!.value;
     }
 
@@ -103,13 +114,18 @@ class ContextCache {
     final context = await onCaptureGlobal?.call() ?? {};
     _globalCache = _CacheEntry(context);
     _globalDirty = false;
-    AiLogger.log('Global cache rebuilt with ${context.length} keys', tag: 'Cache');
+    AiLogger.log(
+      'Global cache rebuilt with ${context.length} keys',
+      tag: 'Cache',
+    );
     return context;
   }
 
   /// Build the session context (nav stack + discovered routes).
   Map<String, dynamic> getSessionContext() {
-    if (!_sessionDirty && _sessionCache != null && !_sessionCache!.isExpired(_sessionTtl)) {
+    if (!_sessionDirty &&
+        _sessionCache != null &&
+        !_sessionCache!.isExpired(_sessionTtl)) {
       AiLogger.log('Session cache HIT', tag: 'Cache');
       return _sessionCache!.value;
     }
@@ -146,7 +162,10 @@ class ContextCache {
 
   /// Mark everything as stale (e.g., after login/logout).
   void invalidateAll() {
-    AiLogger.log('All caches invalidated (global + session + screen)', tag: 'Cache');
+    AiLogger.log(
+      'All caches invalidated (global + session + screen)',
+      tag: 'Cache',
+    );
     _globalDirty = true;
     _sessionDirty = true;
     _screenDirty = true;

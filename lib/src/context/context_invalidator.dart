@@ -38,7 +38,9 @@ class ContextInvalidator with WidgetsBindingObserver {
   }
 
   @override
-  Future<bool> didPushRouteInformation(RouteInformation routeInformation) async {
+  Future<bool> didPushRouteInformation(
+    RouteInformation routeInformation,
+  ) async {
     // System-level navigation (deep link).
     cache.invalidateScreen();
     return false;
