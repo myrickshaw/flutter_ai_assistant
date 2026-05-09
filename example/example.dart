@@ -1,11 +1,14 @@
 /// Example: Integrating flutter_ai_assistant into a Flutter app.
 ///
-/// This shows the minimal setup required — zero annotations, zero boilerplate.
-/// Just wrap your app and provide an LLM API key.
+/// The recommended provider is [FirebaseAiProvider] which routes Gemini
+/// calls through Firebase AI Logic. The Gemini API key never ships in
+/// your app binary; instead it lives on Firebase, which can also verify
+/// a Firebase App Check token before forwarding the request.
 library;
 
 // ignore_for_file: avoid_print
 
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ai_assistant/flutter_ai_assistant.dart';
 
@@ -15,15 +18,12 @@ import 'package:flutter_ai_assistant/flutter_ai_assistant.dart';
 /// can track which screen the user is on and navigate between screens.
 ///
 /// ```dart
-/// void main() {
-///   runApp(
-///     AiAssistant(
-///       config: AiAssistantConfig(
-///         provider: GeminiProvider(apiKey: 'YOUR_GEMINI_API_KEY'),
-///       ),
-///       child: const MyApp(),
-///     ),
+/// Future<void> main() async {
+///   WidgetsFlutterBinding.ensureInitialized();
+///   await Firebase.initializeApp(
+///     options: DefaultFirebaseOptions.currentPlatform,
 ///   );
+///   runApp(const MinimalExampleApp());
 /// }
 /// ```
 class MinimalExampleApp extends StatelessWidget {
@@ -33,7 +33,13 @@ class MinimalExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return AiAssistant(
       config: AiAssistantConfig(
-        provider: GeminiProvider(apiKey: 'YOUR_GEMINI_API_KEY'),
+        // Acceptable: Firebase without App Check (still keeps the API
+        // key off the device). For production, prefer the App-Check
+        // variant shown in `fullIntegration()` below.
+        provider: FirebaseAiProvider(
+          firebaseAi: FirebaseAI.googleAI(),
+          model: 'gemini-2.5-flash',
+        ),
       ),
       // Use Builder to access the controller for the navigatorObserver.
       child: Builder(
@@ -55,13 +61,39 @@ class MinimalExampleApp extends StatelessWidget {
 
 /// Full integration with all optional features configured.
 ///
-/// Full integration with all optional features configured, showing what a
-/// ride-hailing or delivery app integration would look like.
+/// Recommended posture for production: enable Firebase App Check and pass
+/// it to `FirebaseAI.googleAI(...)`. App Check verifies a per-request
+/// platform attestation token (Play Integrity / App Attest /
+/// reCAPTCHA Enterprise) so only signed builds on attested devices can
+/// invoke Gemini through your Firebase project.
 void fullIntegration() {
   // 1. Choose your LLM provider (swap any time).
-  final provider = GeminiProvider(
-    apiKey: 'YOUR_API_KEY',
-    model: 'gemini-2.0-flash', // fast + cheap for mobile
+  //
+  // Recommended: FirebaseAiProvider with App Check enabled. Requires
+  // your host app to also call:
+  //
+  //   await FirebaseAppCheck.instance.activate(
+  //     androidProvider: AndroidProvider.playIntegrity,
+  //     appleProvider: AppleProvider.appAttest,
+  //   );
+  //
+  // before runApp(). See firebase_app_check docs.
+  //
+  // ```dart
+  // final provider = FirebaseAiProvider(
+  //   firebaseAi: FirebaseAI.googleAI(
+  //     appCheck: FirebaseAppCheck.instance,
+  //     useLimitedUseAppCheckTokens: true, // future-proof for May 2026 replay protection
+  //   ),
+  //   model: 'gemini-2.5-flash',
+  // );
+  // ```
+  //
+  // For this example we show the no-App-Check variant to keep the
+  // example dependency-free.
+  final provider = FirebaseAiProvider(
+    firebaseAi: FirebaseAI.googleAI(),
+    model: 'gemini-2.5-flash',
   );
 
   // Alternative providers:

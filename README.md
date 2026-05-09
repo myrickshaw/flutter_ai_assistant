@@ -1,13 +1,16 @@
 # flutter_ai_assistant
 
-A drop-in AI assistant for Flutter apps. Understands your UI through the Semantics tree, executes multi-step tasks autonomously, and works with any LLM provider — Gemini, Claude, or OpenAI.
+A drop-in AI assistant for Flutter apps. Understands your UI through the Semantics tree, executes multi-step tasks autonomously, and works with any LLM provider — Gemini (via Firebase AI Logic), Claude, or OpenAI.
 
 **One widget. Full app control. Zero hardcoding.**
 
 ```dart
 AiAssistant(
   config: AiAssistantConfig(
-    provider: GeminiProvider(apiKey: 'your-key'),
+    provider: FirebaseAiProvider(
+      firebaseAi: FirebaseAI.googleAI(),
+      model: 'gemini-2.5-flash',
+    ),
   ),
   child: MaterialApp(home: HomeScreen()),
 )
@@ -39,6 +42,7 @@ Your users can now say _"order 2 onions from the store"_ and the assistant will 
 - [Quick Start](#quick-start)
 - [Configuration Reference](#configuration-reference)
 - [LLM Providers](#llm-providers)
+- [Migrating from `GeminiProvider`](#migrating-from-geminiprovider)
 - [Custom Tools](#custom-tools)
 - [App Manifest (Code Generation)](#app-manifest-code-generation)
 - [Voice I/O](#voice-io)
@@ -125,18 +129,41 @@ The assistant doesn't use hardcoded screen coordinates or widget keys. It reads 
 
 ## Quick Start
 
-### 1. Add the dependency
+### 1. Add the dependencies
 
 ```yaml
 dependencies:
-  flutter_ai_assistant: ^0.1.0
+  flutter_ai_assistant: ^0.2.0
+  firebase_core: ^4.3.0
+  firebase_ai: ^3.11.0
+  # Optional but strongly recommended for production:
+  # firebase_app_check: ^0.4.0
 ```
 
-### 2. Wrap your app and wire the navigator observer
+### 2. Initialise Firebase
+
+`FirebaseAiProvider` routes Gemini calls through Firebase AI Logic, so your host app must initialise Firebase before constructing the provider. Most apps already do this for analytics/auth/messaging.
+
+```dart
+import 'package:firebase_core/firebase_core.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MyApp());
+}
+```
+
+> Don't have a Firebase project yet? Run `flutterfire configure` (from the FlutterFire CLI) to wire one up.
+
+### 3. Wrap your app and wire the navigator observer
 
 The assistant needs two things: the `AiAssistant` widget wrapping your app, and its `AiNavigatorObserver` added to your `MaterialApp` so it can track route changes.
 
 ```dart
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter_ai_assistant/flutter_ai_assistant.dart';
 
 class MyApp extends StatelessWidget {
@@ -144,11 +171,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return AiAssistant(
       config: AiAssistantConfig(
-        provider: GeminiProvider(apiKey: 'YOUR_GEMINI_API_KEY'),
+        provider: FirebaseAiProvider(
+          firebaseAi: FirebaseAI.googleAI(),
+          model: 'gemini-2.5-flash',
+        ),
       ),
       child: Builder(
         builder: (context) {
-          // Access the controller to get the navigator observer.
           final aiCtrl = AiAssistant.read(context);
           return MaterialApp(
             navigatorObservers: [aiCtrl.navigatorObserver],
@@ -165,14 +194,14 @@ That's it. A floating AI button appears. Users can tap it, type or speak a comma
 
 > **Why the `Builder`?** `AiAssistant.read(context)` requires the `AiAssistant` to be an ancestor in the widget tree. The `Builder` creates a new context below `AiAssistant` so the controller is accessible. Without the navigator observer, the assistant won't know which screen the user is on.
 
-### 3. Add routes and descriptions (recommended)
+### 4. Add routes and descriptions (recommended)
 
 Telling the assistant about your app's screens makes it dramatically smarter:
 
 ```dart
 AiAssistant(
   config: AiAssistantConfig(
-    provider: GeminiProvider(apiKey: apiKey),
+    provider: FirebaseAiProvider(firebaseAi: FirebaseAI.googleAI()),
     knownRoutes: ['/home', '/store', '/cart', '/profile', '/settings'],
     routeDescriptions: {
       '/home': 'Main dashboard with quick actions',
@@ -186,14 +215,14 @@ AiAssistant(
 )
 ```
 
-### 4. Add domain knowledge (recommended)
+### 5. Add domain knowledge (recommended)
 
 Teach the assistant your app's vocabulary and workflows:
 
 ```dart
 AiAssistant(
   config: AiAssistantConfig(
-    provider: GeminiProvider(apiKey: apiKey),
+    provider: FirebaseAiProvider(firebaseAi: FirebaseAI.googleAI()),
 
     // What your app does (for the LLM's understanding)
     appPurpose:
@@ -297,18 +326,73 @@ Every aspect of the assistant is configurable through `AiAssistantConfig`:
 
 The package includes three providers. All share the same `LlmProvider` interface, so switching is a one-line change.
 
-### Gemini (Google)
+### Gemini via Firebase AI Logic (recommended)
 
 ```dart
-GeminiProvider(
-  apiKey: 'your-gemini-api-key',
-  model: 'gemini-2.0-flash',     // default
-  temperature: 0.2,               // default
+import 'package:firebase_ai/firebase_ai.dart';
+
+FirebaseAiProvider(
+  firebaseAi: FirebaseAI.googleAI(),    // or FirebaseAI.vertexAI(location: 'us-central1')
+  model: 'gemini-2.5-flash',            // default
+  temperature: 0.2,                      // default
+  thinkingConfig: ThinkingConfig.withThinkingBudget(1024),  // optional, Gemini 2.5+
   requestTimeout: Duration(seconds: 45),
 )
 ```
 
-Uses the `google_generative_ai` package. Supports function calling and multimodal (images).
+Routes calls through Firebase AI Logic. **Your Gemini API key never ships in the app binary** — it lives on Firebase. Implicit prompt caching on Gemini 2.5+ is automatic. Supports function calling, multi-modal (images), thinking mode, structured output, and streaming.
+
+Three security postures, in order of decreasing strength:
+
+| Posture | Setup | What protects the key |
+|---|---|---|
+| **Best** — Firebase + App Check (limited-use) | `FirebaseAI.googleAI(appCheck: FirebaseAppCheck.instance, useLimitedUseAppCheckTokens: true)` | Key never on device + per-request platform attestation, single-use 5-min tokens, ready for May 2026 replay protection |
+| **Good** — Firebase, no App Check | `FirebaseAI.googleAI()` | Key never on device. Anyone with your Firebase config can technically still invoke; rely on Firebase quotas and usage alerts |
+| **Worst (legacy)** — raw API key in app binary | `GeminiProvider(apiKey: '...')` (deprecated) | Nothing — key is extractable from APK/IPA |
+
+To enable App Check, add `firebase_app_check` to your app's pubspec and call `FirebaseAppCheck.instance.activate(...)` once before `runApp(...)`. See [the Firebase App Check docs](https://firebase.google.com/docs/app-check) for per-platform setup (Play Integrity / App Attest / reCAPTCHA Enterprise).
+
+#### Streaming and structured output
+
+`FirebaseAiProvider` exposes two helpers beyond the base `LlmProvider` contract for use outside the agent loop:
+
+```dart
+// Streaming for a custom chat UI:
+await for (final event in provider.streamMessage(
+  messages: [LlmMessage.user('Tell me a joke')],
+  tools: const [],
+)) {
+  switch (event) {
+    case LlmStreamText(:final delta): print(delta);
+    case LlmStreamToolCall(:final call): print('Tool: ${call.name}');
+    case LlmStreamDone(:final cachedTokenCount): print('Cached: $cachedTokenCount');
+  }
+}
+
+// One-shot JSON output against a schema:
+final result = await provider.generateStructured(
+  prompt: 'Return a person record for "Marie Curie".',
+  schema: Schema.object(properties: {
+    'name': Schema.string(),
+    'born': Schema.integer(),
+    'fields': Schema.array(items: Schema.string()),
+  }),
+);
+```
+
+### Gemini (legacy, deprecated)
+
+```dart
+@Deprecated('Use FirebaseAiProvider — google_generative_ai is archived upstream.')
+GeminiProvider(
+  apiKey: 'your-gemini-api-key',
+  model: 'gemini-2.0-flash',
+  temperature: 0.2,
+  requestTimeout: Duration(seconds: 45),
+)
+```
+
+Uses the archived `google_generative_ai` package. Will be removed in v0.3.0. See [Migrating from `GeminiProvider`](#migrating-from-geminiprovider) below.
 
 ### Claude (Anthropic)
 
@@ -359,29 +443,47 @@ The package handles conversation format, tool schemas, and response parsing — 
 
 ---
 
+## Migrating from `GeminiProvider`
+
+`GeminiProvider` is deprecated as of v0.2.0 and will be removed in v0.3.0. Migrate to `FirebaseAiProvider`:
+
+1. Add `firebase_core` and `firebase_ai` to your pubspec (`firebase_app_check` is optional but recommended).
+2. Initialise Firebase before `runApp(...)`. Most apps already do this for analytics/auth/messaging.
+3. Replace the provider construction:
+
+   ```dart
+   // BEFORE
+   provider: GeminiProvider(apiKey: myGeminiKey),
+
+   // AFTER (no App Check — quickest migration, removes the in-binary key)
+   provider: FirebaseAiProvider(
+     firebaseAi: FirebaseAI.googleAI(),
+     model: 'gemini-2.5-flash',
+   ),
+
+   // AFTER (with App Check — recommended for production)
+   provider: FirebaseAiProvider(
+     firebaseAi: FirebaseAI.googleAI(
+       appCheck: FirebaseAppCheck.instance,
+       useLimitedUseAppCheckTokens: true,
+     ),
+     model: 'gemini-2.5-flash',
+   ),
+   ```
+
+4. **Revoke** any Gemini API key that previously shipped in your app. Even after the migration, the old keys remain in distributed binaries and must be rotated in [Google AI Studio](https://aistudio.google.com/app/apikey).
+5. Remove the API key from your `.env` files and any backend pipelines that fetched it. The Firebase project's stored Gemini API key (configured in the Firebase Console under "AI Logic") replaces it.
+
 ## Best Practices
 
 ### Securing LLM API Keys
 
-**Never ship API keys in your app binary.** Hardcoded keys can be extracted from your APK/IPA in minutes. Instead, serve the key from your backend at runtime:
+**Never ship API keys in your app binary.** Hardcoded keys can be extracted from your APK/IPA in minutes. The recommended path is `FirebaseAiProvider` with App Check (see above), which keeps the Gemini API key entirely off the device.
+
+For Claude or OpenAI (or any other HTTP-based provider), prefer **proxying through your backend** so no LLM key ships in the app:
 
 ```dart
-// DON'T do this — key is extractable from the binary
-GeminiProvider(apiKey: 'AIzaSy...')
-
-// DO this — fetch key from your authenticated backend
-final apiKey = await myBackend.getLlmApiKey(userToken: authToken);
-GeminiProvider(apiKey: apiKey)
-```
-
-**Recommended architecture:**
-1. User authenticates with your backend normally
-2. Your backend returns a short-lived LLM API key (or proxies LLM calls entirely)
-3. The app uses the key only in memory — never persisted to disk
-
-**Even better — proxy through your backend:**
-```dart
-// Your backend proxies calls to Gemini/Claude/OpenAI
+// Your backend proxies calls to Claude/OpenAI
 // This way the LLM key never leaves your server
 ClaudeProvider(
   apiKey: userSessionToken,              // your own auth token
@@ -415,7 +517,7 @@ Register business-logic tools that the LLM can call during task execution:
 
 ```dart
 AiAssistantConfig(
-  provider: GeminiProvider(apiKey: apiKey),
+  provider: FirebaseAiProvider(firebaseAi: FirebaseAI.googleAI()),
   customTools: [
     AiTool(
       name: 'check_inventory',
@@ -465,19 +567,28 @@ These are registered automatically and work on any Flutter app:
 
 ## App Manifest (Code Generation)
 
-For large apps, you can generate a rich "building map" that gives the assistant detailed knowledge of every screen without having to visit them first:
+For large apps, you can generate a rich "building map" that gives the assistant detailed knowledge of every screen without having to visit them first.
+
+The recommended auth path uses Vertex AI + Application Default Credentials, so no long-lived Gemini key needs to live in `.env` or CI variables. Run `gcloud auth application-default login` once on the developer machine (or set `GOOGLE_APPLICATION_CREDENTIALS` to a service-account JSON in CI), then:
 
 ```bash
 dart run flutter_ai_assistant:generate \
+  --project=YOUR_GCP_PROJECT \
   --routes-file=lib/models/routes.dart \
   --router-file=lib/app/router.dart \
-  --api-key=YOUR_GEMINI_KEY \
   --output=lib/ai_app_manifest.g.dart
 ```
 
-Or with an env file:
+Legacy auth (still supported, emits a deprecation warning):
 
 ```bash
+dart run flutter_ai_assistant:generate \
+  --api-key=YOUR_GEMINI_KEY \
+  --routes-file=lib/models/routes.dart \
+  --router-file=lib/app/router.dart \
+  --output=lib/ai_app_manifest.g.dart
+
+# Or with an env file containing GEMINI_API_KEY=...:
 dart run flutter_ai_assistant:generate --env=.env.staging
 ```
 
@@ -494,7 +605,7 @@ Pass the generated manifest to the config:
 import 'ai_app_manifest.g.dart';
 
 AiAssistantConfig(
-  provider: GeminiProvider(apiKey: apiKey),
+  provider: FirebaseAiProvider(firebaseAi: FirebaseAI.googleAI()),
   appManifest: aiAppManifest,
 )
 ```
@@ -782,14 +893,18 @@ final ctrl = AiAssistant.read(context);
 
 ## Platform Support
 
-| Platform | Supported |
-|----------|-----------|
-| Android  | Yes |
-| iOS      | Yes |
-| Web      | Yes |
-| macOS    | Yes |
-| Linux    | Yes |
-| Windows  | Yes |
+The package itself supports all six Flutter platforms. **Provider availability** varies because `firebase_ai` does not ship plugin bindings for Linux or Windows desktop:
+
+| Platform | `FirebaseAiProvider` | `ClaudeProvider` / `OpenAiProvider` (HTTP) |
+|----------|----------------------|--------------------------------------------|
+| Android  | Yes                  | Yes |
+| iOS      | Yes                  | Yes |
+| Web      | Yes                  | Yes |
+| macOS    | Yes                  | Yes |
+| Linux    | **No** (use Claude/OpenAI) | Yes |
+| Windows  | **No** (use Claude/OpenAI) | Yes |
+
+If you target Linux or Windows desktop and need Gemini specifically, either pin to `flutter_ai_assistant: ^0.1.x` (uses the deprecated `google_generative_ai` package, which builds on those platforms) or proxy Gemini calls through your own backend and use `ClaudeProvider`-style HTTP transport.
 
 Voice features (speech-to-text, text-to-speech) depend on platform availability. The assistant gracefully degrades to text-only on platforms without voice support.
 
@@ -804,7 +919,9 @@ Voice features (speech-to-text, text-to-speech) depend on platform availability.
 
 | Package | Purpose |
 |---------|---------|
-| `google_generative_ai` | Gemini provider |
+| `firebase_core` | Firebase initialisation (required by `firebase_ai`) |
+| `firebase_ai` | Recommended Gemini provider (`FirebaseAiProvider`) — App Check, implicit caching |
+| `google_generative_ai` | Legacy Gemini provider (`GeminiProvider`, deprecated, removed in v0.3.0) |
 | `http` | Claude and OpenAI providers (HTTP API calls) |
 | `speech_to_text` | Voice input |
 | `flutter_tts` | Voice output |

@@ -1,8 +1,9 @@
 name: flutter_ai_assistant
 description: >-
   Drop-in AI assistant for Flutter apps. Reads UI via Semantics tree, executes
-  multi-step tasks autonomously, and supports Gemini, Claude, and OpenAI.
-version: 0.1.2
+  multi-step tasks autonomously, and supports Gemini (Firebase AI Logic),
+  Claude, and OpenAI.
+version: 0.2.0
 repository: https://github.com/myrickshaw/flutter_ai_assistant
 
 topics:
@@ -21,6 +22,12 @@ dependencies:
     sdk: flutter
 
   # LLM Providers
+  # Recommended: firebase_ai (Firebase AI Logic) — App Check support,
+  # implicit prompt caching on Gemini 2.5+, no raw API key in the binary.
+  firebase_core: ^4.3.0
+  firebase_ai: ^3.11.0
+  # Legacy: google_generative_ai is archived upstream and only kept for the
+  # deprecated GeminiProvider. Will be removed alongside it in v0.3.0.
   google_generative_ai: ^0.4.7
   http: ^1.3.0
 

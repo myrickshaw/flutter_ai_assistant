@@ -3,9 +3,14 @@
 /// Wrap your MaterialApp with [AiAssistant] to auto-enable AI capabilities:
 ///
 /// ```dart
+/// import 'package:firebase_ai/firebase_ai.dart';
+///
 /// AiAssistant(
 ///   config: AiAssistantConfig(
-///     provider: GeminiProvider(apiKey: 'your-key'),
+///     provider: FirebaseAiProvider(
+///       firebaseAi: FirebaseAI.googleAI(),
+///       model: 'gemini-2.5-flash',
+///     ),
 ///   ),
 ///   child: MaterialApp(home: HomeScreen()),
 /// )
@@ -24,7 +29,9 @@ export 'src/context/ai_navigator_observer.dart';
 
 // LLM Providers
 export 'src/llm/llm_provider.dart';
+export 'src/llm/llm_stream_event.dart';
 export 'src/llm/providers/claude_provider.dart';
+export 'src/llm/providers/firebase_ai_provider.dart';
 export 'src/llm/providers/gemini_provider.dart';
 export 'src/llm/providers/openai_provider.dart';
 

@@ -4,14 +4,28 @@ import '../../core/ai_logger.dart';
 import '../../tools/tool_definition.dart';
 import '../llm_provider.dart';
 
-/// LLM provider implementation for Google Gemini.
+/// LLM provider implementation for Google Gemini using the deprecated
+/// `google_generative_ai` package.
 ///
-/// Uses the `google_generative_ai` package to communicate with
-/// Gemini models. Supports function calling (tool use).
+/// **Deprecated.** The upstream `google_generative_ai` Dart SDK was archived
+/// by Google in December 2025 and replaced by Firebase AI Logic. Use
+/// `FirebaseAiProvider` instead — it keeps the API key off the device,
+/// supports App Check, and unlocks implicit prompt caching on Gemini 2.5+.
+///
+/// This class is kept for one minor cycle to ease migration and will be
+/// removed in v0.3.0.
 ///
 /// ```dart
-/// final provider = GeminiProvider(apiKey: 'your-api-key');
+/// // Migrate to:
+/// final provider = FirebaseAiProvider(
+///   firebaseAi: FirebaseAI.googleAI(),
+///   model: 'gemini-2.5-flash',
+/// );
 /// ```
+@Deprecated(
+  'Use FirebaseAiProvider — google_generative_ai is archived upstream. '
+  'GeminiProvider will be removed in flutter_ai_assistant v0.3.0.',
+)
 class GeminiProvider implements LlmProvider {
   /// Your Google AI API key.
   final String apiKey;

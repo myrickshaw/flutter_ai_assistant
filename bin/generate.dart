@@ -5,15 +5,29 @@
 /// screen's widget source to Gemini for analysis, and generates a complete
 /// Dart manifest file (`AiAppManifest`) for use by the AI assistant.
 ///
-/// Usage:
-///   dart run flutter_ai_assistant:generate \
-///     --routes-file=lib/models/routes.dart \
-///     --router-file=lib/app/router.dart \
-///     --api-key=YOUR_GEMINI_KEY \
-///     --output=lib/ai_app_manifest.g.dart
+/// Two auth modes are supported:
 ///
-/// Or with env file:
-///   dart run flutter_ai_assistant:generate --env=.env.staging
+/// 1. **Vertex AI + Application Default Credentials (recommended)** — no
+///    long-lived API key on disk. Run `gcloud auth application-default
+///    login` once on the developer machine (or set
+///    `GOOGLE_APPLICATION_CREDENTIALS` to a service-account JSON for CI),
+///    then pass `--project=YOUR_GCP_PROJECT`.
+///
+///    ```
+///    dart run flutter_ai_assistant:generate \
+///      --project=my-gcp-project \
+///      --routes-file=lib/models/routes.dart \
+///      --router-file=lib/app/router.dart \
+///      --output=lib/ai_app_manifest.g.dart
+///    ```
+///
+/// 2. **Legacy: Gemini Developer API key** — `--api-key=KEY` or `--env=PATH`
+///    with a `GEMINI_API_KEY=...` line. Kept for back-compat; emits a
+///    deprecation warning recommending the ADC path.
+///
+///    ```
+///    dart run flutter_ai_assistant:generate --env=.env.staging
+///    ```
 library;
 
 import 'dart:convert';
@@ -24,12 +38,16 @@ import 'dart:io';
 // ---------------------------------------------------------------------------
 
 Future<void> main(List<String> args) async {
-  final config = _parseArgs(args);
+  final config = await _parseArgs(args);
 
   print('=== flutter_ai_assistant: generate app manifest ===');
   print('Routes file : ${config.routesFile}');
   print('Router file : ${config.routerFile}');
   print('Output      : ${config.output}');
+  print(
+    'Auth        : ${config.authMode == _AuthMode.vertexAdc ? 'Vertex AI + ADC (project: ${config.project})' : 'Gemini Developer API (legacy --api-key)'}',
+  );
+  print('Model       : ${config.model}');
   print('');
 
   // 1. Parse route constants.
@@ -74,11 +92,10 @@ Future<void> main(List<String> args) async {
 
     try {
       final analysis = await _analyzeScreen(
-        config.apiKey,
+        config,
         routeConstant,
         routeValue,
         entry.value,
-        config.model,
       );
       if (analysis != null) {
         screenAnalyses[routeConstant] = analysis;
@@ -99,12 +116,7 @@ Future<void> main(List<String> args) async {
   List<Map<String, dynamic>> flows = [];
   if (screenAnalyses.isNotEmpty) {
     try {
-      flows = await _generateFlows(
-        config.apiKey,
-        routeConstants,
-        screenAnalyses,
-        config.model,
-      );
+      flows = await _generateFlows(config, routeConstants, screenAnalyses);
       print('  Generated ${flows.length} flows');
     } catch (e) {
       print('  WARNING: Failed to generate flows: $e');
@@ -134,12 +146,18 @@ Future<void> main(List<String> args) async {
 // Config
 // ---------------------------------------------------------------------------
 
+enum _AuthMode { apiKey, vertexAdc }
+
 class _Config {
   final String routesFile;
   final String routerFile;
   final String routesClass;
   final String routesFileImport;
-  final String apiKey;
+  final _AuthMode authMode;
+  final String? apiKey;
+  final String? project;
+  final String location;
+  final String? accessToken; // resolved once at startup for vertexAdc mode
   final String output;
   final String appName;
   final String model;
@@ -149,22 +167,28 @@ class _Config {
     required this.routerFile,
     required this.routesClass,
     required this.routesFileImport,
-    required this.apiKey,
+    required this.authMode,
+    required this.location,
     required this.output,
     required this.appName,
     required this.model,
+    this.apiKey,
+    this.project,
+    this.accessToken,
   });
 }
 
-_Config _parseArgs(List<String> args) {
+Future<_Config> _parseArgs(List<String> args) async {
   String? routesFile;
   String? routerFile;
   String routesClass = 'Routes';
   String routesFileImport = 'models/routes.dart';
   String? apiKey;
+  String? project;
+  String location = 'us-central1';
   String output = 'lib/ai_app_manifest.g.dart';
   String appName = 'App';
-  String model = 'gemini-2.0-flash';
+  String model = 'gemini-2.5-flash';
   String? envFile;
 
   for (final arg in args) {
@@ -178,6 +202,10 @@ _Config _parseArgs(List<String> args) {
       routesFileImport = arg.split('=').sublist(1).join('=');
     } else if (arg.startsWith('--api-key=')) {
       apiKey = arg.split('=').sublist(1).join('=');
+    } else if (arg.startsWith('--project=')) {
+      project = arg.split('=').sublist(1).join('=');
+    } else if (arg.startsWith('--location=')) {
+      location = arg.split('=').sublist(1).join('=');
     } else if (arg.startsWith('--output=')) {
       output = arg.split('=').sublist(1).join('=');
     } else if (arg.startsWith('--app-name=')) {
@@ -196,6 +224,8 @@ _Config _parseArgs(List<String> args) {
   if (apiKey == null && envFile != null) {
     apiKey = _loadApiKeyFromEnv(envFile);
   }
+  // Also accept a process-env GEMINI_API_KEY when --api-key not given.
+  apiKey ??= Platform.environment['GEMINI_API_KEY'];
 
   // Auto-detect files if not specified.
   routesFile ??= _autoDetect('lib/models/routes.dart', 'lib/routes.dart');
@@ -209,9 +239,43 @@ _Config _parseArgs(List<String> args) {
     print('ERROR: Cannot find router file. Specify with --router-file=');
     exit(1);
   }
-  if (apiKey == null || apiKey.isEmpty) {
+
+  // Auth mode resolution: --project takes precedence; otherwise fall back to
+  // legacy --api-key. If neither is provided, error out.
+  _AuthMode authMode;
+  String? accessToken;
+  if (project != null && project.isNotEmpty) {
+    authMode = _AuthMode.vertexAdc;
+    if (apiKey != null && apiKey.isNotEmpty) {
+      print(
+        'INFO: --project provided; ignoring --api-key in favour of '
+        'Vertex AI + Application Default Credentials.',
+      );
+    }
+    accessToken = await _getAdcAccessToken();
+    if (accessToken == null) {
+      print(
+        'ERROR: Could not get an Application Default Credentials access '
+        'token. Run "gcloud auth application-default login" first '
+        '(or set GOOGLE_APPLICATION_CREDENTIALS for CI).',
+      );
+      exit(1);
+    }
+  } else if (apiKey != null && apiKey.isNotEmpty) {
+    authMode = _AuthMode.apiKey;
     print(
-      'ERROR: Gemini API key required. Use --api-key= or --env=.env.staging',
+      'WARNING: Using --api-key (Gemini Developer API). This is the legacy '
+      'auth path and ships a long-lived key in your build environment. '
+      'Prefer --project=YOUR_GCP_PROJECT with `gcloud auth application-'
+      'default login` for stronger key hygiene.',
+    );
+  } else {
+    print(
+      'ERROR: No auth provided. Use either:\n'
+      '  --project=YOUR_GCP_PROJECT   (recommended, requires `gcloud auth '
+      'application-default login`)\n'
+      '  --api-key=KEY                (legacy)\n'
+      '  --env=PATH                   (legacy, reads GEMINI_API_KEY=...)',
     );
     exit(1);
   }
@@ -221,11 +285,36 @@ _Config _parseArgs(List<String> args) {
     routerFile: routerFile,
     routesClass: routesClass,
     routesFileImport: routesFileImport,
+    authMode: authMode,
     apiKey: apiKey,
+    project: project,
+    location: location,
+    accessToken: accessToken,
     output: output,
     appName: appName,
     model: model,
   );
+}
+
+/// Resolve a short-lived access token for Vertex AI via Application Default
+/// Credentials. Shells out to `gcloud auth print-access-token` so we don't
+/// pull in the heavy `googleapis_auth` package.
+Future<String?> _getAdcAccessToken() async {
+  try {
+    final result = await Process.run('gcloud', [
+      'auth',
+      'print-access-token',
+    ], runInShell: true);
+    if (result.exitCode != 0) {
+      print('  gcloud error: ${result.stderr}');
+      return null;
+    }
+    final token = (result.stdout as String).trim();
+    return token.isEmpty ? null : token;
+  } catch (e) {
+    print('  Failed to invoke gcloud: $e');
+    return null;
+  }
 }
 
 String? _autoDetect(String primary, String fallback) {
@@ -256,16 +345,26 @@ flutter_ai_assistant: generate - LLM-powered app context manifest generator
 Usage:
   dart run flutter_ai_assistant:generate [options]
 
-Options:
+Auth (recommended): Vertex AI + Application Default Credentials
+  --project=ID           GCP project ID. Requires `gcloud auth
+                         application-default login` (or
+                         GOOGLE_APPLICATION_CREDENTIALS for CI).
+  --location=REGION      Vertex AI region (default: us-central1)
+
+Auth (legacy): Gemini Developer API key
+  --api-key=KEY          Gemini API key
+  --env=PATH             Load GEMINI_API_KEY=... from a .env file
+                         (also reads the GEMINI_API_KEY env var)
+
+Common options:
   --routes-file=PATH     Path to routes file (default: auto-detect)
   --router-file=PATH     Path to router file (default: auto-detect)
   --routes-class=NAME    Route constants class name (default: Routes)
-  --routes-import=PATH   Import path for routes in generated file (default: models/routes.dart)
-  --api-key=KEY          Gemini API key
-  --env=PATH             Load API key from .env file
+  --routes-import=PATH   Import path for routes in generated file
+                         (default: models/routes.dart)
   --output=PATH          Output file path (default: lib/ai_app_manifest.g.dart)
   --app-name=NAME        App name for the manifest (default: App)
-  --model=NAME           Gemini model to use (default: gemini-2.0-flash)
+  --model=NAME           Gemini model to use (default: gemini-2.5-flash)
   --help, -h             Show this help message
 ''');
 }
@@ -341,11 +440,10 @@ String? _findClassSource(String libDir, String className) {
 
 /// Send a screen's source code to Gemini for analysis.
 Future<Map<String, dynamic>?> _analyzeScreen(
-  String apiKey,
+  _Config config,
   String routeConstant,
   String routeValue,
   String sourceCode,
-  String model,
 ) async {
   final prompt =
       '''
@@ -389,7 +487,7 @@ Rules:
 - If you cannot determine something from the source, make a reasonable inference.
 ''';
 
-  final response = await _callGemini(apiKey, prompt, model);
+  final response = await _callGemini(config, prompt);
   if (response == null) return null;
 
   try {
@@ -409,10 +507,9 @@ Rules:
 
 /// Generate common multi-screen flows from all screen analyses.
 Future<List<Map<String, dynamic>>> _generateFlows(
-  String apiKey,
+  _Config config,
   Map<String, String> routeConstants,
   Map<String, Map<String, dynamic>> screenAnalyses,
-  String model,
 ) async {
   final screenSummaries = StringBuffer();
   for (final entry in screenAnalyses.entries) {
@@ -455,7 +552,7 @@ Rules:
 - Keep instructions concise and actionable.
 ''';
 
-  final response = await _callGemini(apiKey, prompt, model);
+  final response = await _callGemini(config, prompt);
   if (response == null) return [];
 
   try {
@@ -476,40 +573,83 @@ Rules:
   }
 }
 
-/// Call Gemini API and return the text response.
-Future<String?> _callGemini(String apiKey, String prompt, String model) async {
-  final url = Uri.parse(
-    'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey',
-  );
+/// Call the configured Gemini backend (Vertex AI + ADC, or Gemini Developer
+/// API + key) and return the text response.
+Future<String?> _callGemini(_Config config, String prompt) async {
+  return switch (config.authMode) {
+    _AuthMode.vertexAdc => _callGeminiViaVertex(config, prompt),
+    _AuthMode.apiKey => _callGeminiViaDeveloperApi(config, prompt),
+  };
+}
 
+Future<String?> _callGeminiViaDeveloperApi(
+  _Config config,
+  String prompt,
+) async {
+  final url = Uri.parse(
+    'https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}',
+  );
+  return _postGenerateContent(
+    url: url,
+    headers: {'Content-Type': 'application/json; charset=utf-8'},
+    body: jsonEncode({
+      'contents': [
+        {
+          'parts': [
+            {'text': prompt},
+          ],
+        },
+      ],
+      'generationConfig': {'temperature': 0.1, 'maxOutputTokens': 4096},
+    }),
+  );
+}
+
+Future<String?> _callGeminiViaVertex(_Config config, String prompt) async {
+  final url = Uri.parse(
+    'https://${config.location}-aiplatform.googleapis.com/v1/projects/${config.project}/locations/${config.location}/publishers/google/models/${config.model}:generateContent',
+  );
+  return _postGenerateContent(
+    url: url,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Authorization': 'Bearer ${config.accessToken}',
+    },
+    body: jsonEncode({
+      'contents': [
+        {
+          'role': 'user',
+          'parts': [
+            {'text': prompt},
+          ],
+        },
+      ],
+      'generationConfig': {'temperature': 0.1, 'maxOutputTokens': 4096},
+    }),
+  );
+}
+
+/// Shared HTTP POST that extracts the first candidate's first text part.
+Future<String?> _postGenerateContent({
+  required Uri url,
+  required Map<String, String> headers,
+  required String body,
+}) async {
   final client = HttpClient();
   try {
     final request = await client.postUrl(url);
-    request.headers.set('Content-Type', 'application/json; charset=utf-8');
-    request.add(
-      utf8.encode(
-        jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                {'text': prompt},
-              ],
-            },
-          ],
-          'generationConfig': {'temperature': 0.1, 'maxOutputTokens': 4096},
-        }),
-      ),
-    );
+    headers.forEach(request.headers.set);
+    request.add(utf8.encode(body));
 
     final response = await request.close();
-    final body = await response.transform(utf8.decoder).join();
+    final responseBody = await response.transform(utf8.decoder).join();
 
     if (response.statusCode != 200) {
-      print('    Gemini API error (${response.statusCode}): $body');
+      print('    Gemini API error (${response.statusCode}): $responseBody');
       return null;
     }
 
-    final json = jsonDecode(body) as Map<String, dynamic>;
+    final json = jsonDecode(responseBody) as Map<String, dynamic>;
     final candidates = json['candidates'] as List<dynamic>?;
     if (candidates == null || candidates.isEmpty) return null;
 
